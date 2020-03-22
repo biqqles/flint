@@ -20,14 +20,14 @@ import warnings
 
 from . import bini
 
-DELIMITER_KEY_VALUE = ' = '
+DELIMITER_KEY_VALUE = '='
 DELIMITER_COMMENT = ';'
 SECTION_NAME_START = '['
 SECTION_NAME_END = ']'
 
 
 def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=True):
-    """Interpret the inis in paths and return a map... todo
+    """Interpret the inis in `paths` and return a parsed representation of their structure:
     If `fold_values` is True, fold keys with single values into single types (not lists), if False all values
     will be lists. The former is more consistent, so easier to process with minimal code, the latter is more useful
     when the individual values are important."""
@@ -52,12 +52,12 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
             section_name, delimiter, entries = s.partition(SECTION_NAME_END)
             if not delimiter or (target_section and section_name != target_section):
                 continue
-            lines = entries.splitlines()
             section_entries = {}
-            for entry in lines:
-                entry = entry.split(';')[0].strip()  # discard comments
-                key, delimiter, value = entry.partition(' = ')
-                if not key:
+            for entry in entries.splitlines():
+                # discard comments and whitespace, then split into key-value pairs
+                entry = entry.split(DELIMITER_COMMENT, 1)[0].replace(' ', '').replace('\t', '')
+                key, delimiter, value = entry.partition(DELIMITER_KEY_VALUE)
+                if not delimiter:
                     continue
 
                 try:
@@ -115,7 +115,7 @@ def fetch(paths: Any, target_section: str, keys: set = frozenset(), multivalued_
             else:
                 raw = data.decode('windows-1252').lower()
 
-        sections = raw.split('[')
+        sections = raw.split(SECTION_NAME_START)
 
         for section in sections:
             if section:
@@ -126,7 +126,8 @@ def fetch(paths: Any, target_section: str, keys: set = frozenset(), multivalued_
 
                 if section_name == target_section:
                     for line in lines:
-                        line = line.split(DELIMITER_COMMENT)[0].strip()  # strip comment and trailing whitespace
+                        # strip comments and whitespace
+                        line = line.split(DELIMITER_COMMENT)[0].replace(' ', '').replace('\t', '')
                         key, delimiter, value = line.partition(DELIMITER_KEY_VALUE)  # split into key and value
 
                         if not delimiter:  # discard comment lines, empty lines and valueless keys
@@ -166,5 +167,4 @@ def parse_value(entry_value: str):
         except ValueError:
             return float(v)
 
-    entry_value = entry_value.replace(' ', '')
     return tuple(map(auto_cast, entry_value.split(','))) if ',' in entry_value else auto_cast(entry_value)
