@@ -43,7 +43,7 @@ class Entity(metaclass=CachedDataclass):
 
     def infocard(self, plain=False) -> str:
         """The infocard for this entity, formatted in HTML unless `plain` is specified."""
-        lookup = dll.lookup if plain else dll.lookup
+        lookup = dll.lookup if plain else dll.lookup_as_html
         return lookup(self.ids_info)
 
     def __hash__(self) -> int:
