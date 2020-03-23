@@ -19,6 +19,7 @@ from .entities import EntitySet
 from .entities import Commodity, Ship
 from .entities import Base, System, Group
 from .entities import Solar, Jump, BaseSolar, Star, Planet, PlanetaryBase
+from .maps import PosVector
 
 
 @cached
@@ -96,6 +97,7 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
         if 'ids_name' not in o:
             continue
         o['_system'] = system
+        o['pos'] = PosVector(*o['pos'])
         keys = o.keys()
         if {'base', 'reputation', 'ids_info'} <= keys:
             if 'spin' in keys:
