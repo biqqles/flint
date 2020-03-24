@@ -62,7 +62,12 @@ class Entity(metaclass=CachedDataclass):
         for k in set(parameters):  # copy keys so we can modify dict as we iterate
             if k not in all_annotations:
                 del parameters[k]
-        return cls(**parameters)
+
+        try:
+            return cls(**parameters)
+        except TypeError as e:
+            e.args = (e.args[0] + f' for entity with nickname {parameters["nickname"]}',)
+            raise e
 
     @classmethod
     def __all_annotations__(cls) -> Dict[str, type]:
@@ -125,5 +130,5 @@ class EntitySet(collections.abc.Mapping, Generic[T]):
 
 # exported types
 from .goods import Ship, Commodity
-from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase
+from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase, TradeLaneRing, Wreck, BaseDecoration
 from .universe import Base, System, Group
