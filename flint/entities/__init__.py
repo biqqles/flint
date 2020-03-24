@@ -98,6 +98,16 @@ class EntitySet(collections.abc.Mapping, Generic[T]):
     def __len__(self):
         return len(self._map)
 
+    def __add__(self, other):
+        """Two EntitySets can be added together."""
+        if type(other) is not type(self):
+            raise TypeError(f'Can only concatenate EntitySet (not {type(other)}) with EntitySet.')
+        return EntitySet({e for e in self} | {e for e in other})
+
+    def __iadd__(self, other):
+        """An EntitySet can be extended."""
+        return self + other
+
     def where(self, op=operator.eq, **kwargs) -> 'EntitySet[T]':
         """Return elements of this EntitySet for which _all_ specified fields match their specified conditions.
         (Like a very rudimentary ORM.)
