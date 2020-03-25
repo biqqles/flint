@@ -92,10 +92,11 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
     result = []
     contents = ini.parse(system.definition_path())
 
+    rot0 = RotVector(0, 0, 0)
+
     # categorise objects based on their keys
     # from_keys and using get() for optional keys is a bit of a hack that has to be used until I release a replacement
     # for dataclasses
-    rot0 = RotVector(0, 0, 0)
     for o in contents.get('object', []):
         if 'ids_name' not in o:
             continue
@@ -103,12 +104,10 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
         o['pos'] = PosVector(*o['pos'])
         o.setdefault('rotate', rot0)
         o.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
+
         keys = o.keys()
-        if {'base', 'reputation'} <= keys:
-            if 'spin' in keys:
-                result.append(PlanetaryBase.from_dict(o))
-            elif 'loadout' in keys:
-                result.append(BaseSolar.from_dict(o))
+        if {'base', 'reputation', 'space_costume'} <= keys:
+            result.append(BaseSolar.from_dict(o))
         elif 'goto' in keys:
             result.append(Jump.from_dict(o))
         elif 'prev_ring' in keys or 'next_ring' in keys:
@@ -118,7 +117,8 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
         elif 'star' in keys:
             result.append(Star.from_dict(o, atmosphere_range=o.get('atmosphere_range', 0)))
         elif 'spin' in keys:
-            result.append(Planet.from_dict(o, atmosphere_range=o.get('atmosphere_range', 0)))
+            o.setdefault('atmosphere_range', 0)
+            result.append(PlanetaryBase.from_dict(o) if 'base' in keys else Planet.from_dict(o))
         else:
             result.append(Object.from_dict(o))
     # todo: zones
