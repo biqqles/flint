@@ -31,15 +31,15 @@ class System(Entity):
     def planets(self):
         return EntitySet(c for c in self.contents() if isinstance(c, Planet))
 
-    def suns(self):
+    def stars(self):
         return EntitySet(c for c in self.contents() if isinstance(c, Star))
 
     def connections(self):
         """The systems this system has jumps to."""
         return {c: c.destination_system() for c in self.contents() if isinstance(c, Jump)}
 
-    def graph(self):
-        raise NotImplementedError
+    def zones(self):
+        return EntitySet(c for c in self.contents() if isinstance(c, Zone))
 
 
 class Base(Entity):
@@ -80,4 +80,4 @@ class Group(Entity):
         return {f: r for r, f in self.rep}
 
 
-from .solars import Solar, BaseSolar, Jump, Planet, Star
+from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone

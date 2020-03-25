@@ -5,7 +5,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Tuple
+from typing import Tuple, Optional, Union
 
 from .. import maps
 from . import Entity
@@ -15,6 +15,7 @@ from ..formats import ini, dll
 class Solar(Entity):
     """A solar is something fixed in space (this name comes from the DATA/SOLAR directory)."""
     pos: maps.PosVector
+    rotate: maps.RotVector
     _system: 'System'  # the system this solar resides in
 
     def sector(self) -> str:
@@ -32,6 +33,7 @@ class Jump(Object):
     goto: Tuple[str, str, str]
 
     def type(self):
+        """Return a human readable name of this jump conduits's type."""
         if 'gate' in self.archetype: return 'Jump Gate'
         if 'jumphole' in self.archetype: return 'Jump Hole'
         if self.archetype == 'entrypoint': return 'Atmospheric Entry'
@@ -45,12 +47,20 @@ class Jump(Object):
         """The system this wormhole ends in."""
         return routines.get_systems()[self.goto[0]]
 
-    # class Jump(Enum):
-    #     HOLE = auto()
-    #     GATE = auto()
-    #     ATMOS = auto()
-    #     HYPER = auto()
-    #     UNKNOWN = auto()
+
+class TradeLaneRing(Object):
+    """A trade lane ring is a component of a trade lane, a structure which provides "superluminal travel" within a
+    system."""
+    prev_ring: Optional[str]
+    next_ring: Optional[str]
+
+    def next_object(self):
+        return self._system.contents()[self.next_ring]
+
+
+class Wreck(Object):
+    """A wreck (called "secrets" in the game files is a lootable, wrecked ship floating in space."""
+    loadout: str  # loot that is dropped upon being shot
 
 
 class BaseSolar(Object):
@@ -80,13 +90,11 @@ class BaseSolar(Object):
 class Spheroid(Object):
     """A star or planet. (Abstract.)"""
     atmosphere_range: int
-    burn_color: Tuple[int, int, int]
 
 
 class Star(Spheroid):
     """A star in a System."""
     star: str
-    ambient_color: Tuple[int, int, int]
 
 
 class Planet(Spheroid):

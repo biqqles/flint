@@ -18,8 +18,8 @@ from .formats import ini
 from .entities import EntitySet
 from .entities import Commodity, Ship
 from .entities import Base, System, Group
-from .entities import Solar, Jump, BaseSolar, Star, Planet, PlanetaryBase
-from .maps import PosVector
+from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck
+from .maps import PosVector, RotVector
 
 
 @cached
@@ -90,27 +90,37 @@ def get_ships() -> EntitySet[Ship]:
 def get_system_contents(system: System) -> EntitySet[Solar]:
     """All contents (objects and zones) of a system."""
     result = []
-    objects = ini.parse(system.definition_path(), 'object')
+    contents = ini.parse(system.definition_path())
 
     # categorise objects based on their keys
-    for o in objects:
+    # from_keys and using get() for optional keys is a bit of a hack that has to be used until I release a replacement
+    # for dataclasses
+    rot0 = RotVector(0, 0, 0)
+    for o in contents.get('object', []):
         if 'ids_name' not in o:
             continue
         o['_system'] = system
         o['pos'] = PosVector(*o['pos'])
+        o.setdefault('rotate', rot0)
+        o.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
         keys = o.keys()
-        if {'base', 'reputation', 'ids_info'} <= keys:
+        if {'base', 'reputation'} <= keys:
             if 'spin' in keys:
                 result.append(PlanetaryBase.from_dict(o))
             elif 'loadout' in keys:
                 result.append(BaseSolar.from_dict(o))
-        elif 'star' in keys:
-            result.append(Star.from_dict(o))
-        elif 'spin' in keys:
-            result.append(Planet.from_dict(o))
         elif 'goto' in keys:
-            result.append(Jump.from_dict(o, ids_info=None))
-        # todo: and so on
+            result.append(Jump.from_dict(o))
+        elif 'prev_ring' in keys or 'next_ring' in keys:
+            result.append(TradeLaneRing.from_dict(o, prev_ring=o.get('prev_ring'), next_ring=o.get('next_ring')))
+        elif 'loadout' in keys and 'reputation' not in keys:
+            result.append(Wreck.from_dict(o))
+        elif 'star' in keys:
+            result.append(Star.from_dict(o, atmosphere_range=o.get('atmosphere_range', 0)))
+        elif 'spin' in keys:
+            result.append(Planet.from_dict(o, atmosphere_range=o.get('atmosphere_range', 0)))
+        else:
+            result.append(Object.from_dict(o))
     # todo: zones
     return EntitySet(result)
 
