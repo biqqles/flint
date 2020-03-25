@@ -46,11 +46,13 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
             f.seek(0)
             data = f.read()
         raw = data.decode('windows-1252').lower()
+        raw = raw.replace(DELIMITER_COMMENT + SECTION_NAME_START, '')  # delete commented section markers
 
         sections = raw.split(SECTION_NAME_START)
         for s in sections:
             section_name, delimiter, entries = s.partition(SECTION_NAME_END)
-            if not delimiter or (target_section and section_name != target_section):
+            if not delimiter or (DELIMITER_COMMENT in section_name) or \
+                    (target_section and section_name != target_section):
                 continue
             section_entries = {}
             for entry in entries.splitlines():
@@ -80,6 +82,8 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
 def fetch(paths: Any, target_section: str, keys: set = frozenset(), multivalued_keys: set = frozenset(),
           target_key: str = None):
     """A simple, speedy parser for Freelancer-style INIs.
+
+    # todo: another hanger-on until a replacement for dataclasses is ready
 
     Freelancer-style INIs have a number of features that make them unsuitable for use with Python's built-in
     configparser, most importantly repeated section names and repeated (in other words, multi-valued) keys.
