@@ -212,6 +212,8 @@ RDL_TO_HTML = {
     '<TRA data="0" mask="3" def="-1"/>':           '</i>',  # un-italic 1
     '<TRA data="98" mask="-29" def="-3"/>':        '<i>',  # italic 2
     '<TRA data="96" mask="-29" def="-1"/>':        '</i>',  # un-italic 2
+    '<TRA data="2" mask="2" def="-3"/>':           '<i>',  # italic 3
+    '<TRA data="0" mask="2" def="-1"/>':           '</i>',  # un-italic 3
     '<TRA data="5" mask="5" def="-6"/>':           '<b><u>',  # (bold, underline) 1
     '<TRA data="0" mask="5" def="-1"/>':           '</b></u>',  # un-(bold, underline) 1
     '<TRA data="5" mask="7" def="-6"/>':           '<b><u>',  # (bold, underline) 2
