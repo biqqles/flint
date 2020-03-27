@@ -107,6 +107,11 @@ class PlanetaryBase(BaseSolar, Planet):
     pass
 
 
+class Zone(Solar):
+    size: Union[int, Tuple[int, int], Tuple[int, int, int]]
+    shape: str  # one of: sphere, ring, box, ellipsoid
+
+
 from .universe import System
 
 from .. import routines

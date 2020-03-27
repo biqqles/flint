@@ -18,7 +18,7 @@ from .formats import ini
 from .entities import EntitySet
 from .entities import Commodity, Ship
 from .entities import Base, System, Group
-from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck
+from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
 from .maps import PosVector, RotVector
 
 
@@ -88,7 +88,7 @@ def get_ships() -> EntitySet[Ship]:
 
 @cached
 def get_system_contents(system: System) -> EntitySet[Solar]:
-    """All contents (objects and zones) of a system."""
+    """All solars (objects and zones) in a given system."""
     result = []
     contents = ini.parse(system.definition_path())
 
@@ -97,14 +97,19 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
     # categorise objects based on their keys
     # from_keys and using get() for optional keys is a bit of a hack that has to be used until I release a replacement
     # for dataclasses
+
+    def modify_solar(solar: Dict):
+        """Common dict modifications for all solar types."""
+        solar['_system'] = system
+        solar['pos'] = PosVector(*o['pos'])
+        solar.setdefault('rotate', rot0)
+        solar.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
+        return solar
+
     for o in contents.get('object', []):
         if 'ids_name' not in o:
             continue
-        o['_system'] = system
-        o['pos'] = PosVector(*o['pos'])
-        o.setdefault('rotate', rot0)
-        o.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
-
+        o = modify_solar(o)
         keys = o.keys()
         if {'base', 'reputation', 'space_costume'} <= keys:
             result.append(BaseSolar.from_dict(o))
@@ -121,7 +126,12 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
             result.append(PlanetaryBase.from_dict(o) if 'base' in keys else Planet.from_dict(o))
         else:
             result.append(Object.from_dict(o))
-    # todo: zones
+
+    for z in contents.get('zone', []):
+        z = modify_solar(z)
+        if 'ids_name' in z.keys():
+            result.append(Zone.from_dict(z))
+
     return EntitySet(result)
 
 
