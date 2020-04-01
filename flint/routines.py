@@ -8,9 +8,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 This file contains routines for parsing specific sets of information
 from the game files. All exported functions return EntitySets.
 """
-
-from collections import defaultdict
 from typing import Dict, List, Tuple
+from collections import defaultdict
 
 from . import paths
 from .dynamic import cached
@@ -165,11 +164,13 @@ def _get_markets() -> Dict[str, Dict[bool, List[Tuple[str, int]]]]:
         base = b['base']
         base_market = b['marketgood']
         for good, min_rank, min_rep, min_stock, max_stock, depreciate, multiplier, *_ in base_market:
+            if not multiplier:
+                continue
             try:
                 sold = not (min_stock == 0 or max_stock == 0)
-                price_at_base = goods[good]['price'] * multiplier
+                price_at_base = int(round(goods[good]['price'] * multiplier))
             except KeyError:
-                continue
+                continue  # this is expected for ship packages, which do not appear in market sections
 
             result[base][sold].append((good, price_at_base))
             result[good][sold].append((base, price_at_base))
