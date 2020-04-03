@@ -50,6 +50,20 @@ class System(Entity):
         """The connections this system has to other systems."""
         return {c: c.destination_system() for c in self.objects() if isinstance(c, Jump)}
 
+    def lanes(self) -> List[List[TradeLaneRing]]:
+        """Return a list of lists of rings, where each nested list represents a complete trade lane and contains each
+        ring in that lane in order."""
+        rings = EntitySet(c for c in self.contents() if isinstance(c, TradeLaneRing))
+        lanes = {r: [] for r in rings if r.prev_ring is None}  # find rings which start a lane
+        # group remaining rings into one of these
+        for first_ring in lanes:
+            current_ring = first_ring
+            while current_ring:
+                current_ring = rings.get(current_ring.next_ring)
+                if current_ring:
+                    lanes[first_ring].append(current_ring)
+        return [[f, *r] for f, r in lanes.items()]  # flatten grouping dict into list of lists
+
 
 class Base(Entity):
     """A space station or colonised planet, operated by a Group."""
