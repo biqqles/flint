@@ -1,8 +1,10 @@
-#  Copyright (C) 2016, 2017, 2020 biqqles.
-#  This Source Code Form is subject to the terms of the Mozilla Public
-#  License, v. 2.0. If a copy of the MPL was not distributed with this
-#  file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import dataclasses
+"""
+Copyright (C) 2016, 2017, 2020 biqqles.
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""
+from __future__ import annotations
 import os
 from typing import Dict, List, Tuple
 
@@ -16,30 +18,37 @@ class System(Entity):
     file: str
     navmapscale: float = 1.0
 
-    def contents(self) -> 'EntitySet[Solar]':
-        """The contents of this system."""
-        return routines.get_system_contents(self)
-
     def definition_path(self) -> str:
         """The absolute path to the file that defines this system's contents."""
         return paths.construct_path(os.path.dirname(paths.inis['universe'][0]), self.file)
 
-    def bases(self) -> 'EntitySet[BaseSolar]':
-        """The bases in this system."""
-        return EntitySet(c for c in self.contents() if isinstance(c, BaseSolar))
+    def contents(self) -> EntitySet[Solar]:
+        """All solars in this system."""
+        return routines.get_system_contents(self)
 
-    def planets(self):
-        return EntitySet(c for c in self.contents() if isinstance(c, Planet))
-
-    def stars(self):
-        return EntitySet(c for c in self.contents() if isinstance(c, Star))
-
-    def connections(self):
-        """The systems this system has jumps to."""
-        return {c: c.destination_system() for c in self.contents() if isinstance(c, Jump)}
-
-    def zones(self):
+    def zones(self) -> EntitySet[Zone]:
+        """All zones in this system."""
         return EntitySet(c for c in self.contents() if isinstance(c, Zone))
+
+    def objects(self) -> EntitySet[Object]:
+        """All objects in this system."""
+        return EntitySet(c for c in self.contents() if isinstance(c, Object))
+
+    def bases(self) -> EntitySet[BaseSolar]:
+        """All bases in this system."""
+        return EntitySet(c for c in self.objects() if isinstance(c, BaseSolar))
+
+    def planets(self) -> EntitySet[Planet]:
+        """All planets in this system."""
+        return EntitySet(c for c in self.objects() if isinstance(c, Planet))
+
+    def stars(self) -> EntitySet[Star]:
+        """All stars in this system."""
+        return EntitySet(c for c in self.objects() if isinstance(c, Star))
+
+    def connections(self) -> Dict[Jump, System]:
+        """The connections this system has to other systems."""
+        return {c: c.destination_system() for c in self.objects() if isinstance(c, Jump)}
 
 
 class Base(Entity):
