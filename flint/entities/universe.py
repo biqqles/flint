@@ -4,9 +4,9 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from __future__ import annotations
-import os
 from typing import Dict, List, Tuple
+import os
+import dataclasses
 
 from .. import paths
 from .. import routines
@@ -22,35 +22,35 @@ class System(Entity):
         """The absolute path to the file that defines this system's contents."""
         return paths.construct_path(os.path.dirname(paths.inis['universe'][0]), self.file)
 
-    def contents(self) -> EntitySet[Solar]:
+    def contents(self) -> 'EntitySet[Solar]':
         """All solars in this system."""
         return routines.get_system_contents(self)
 
-    def zones(self) -> EntitySet[Zone]:
+    def zones(self) -> 'EntitySet[Zone]':
         """All zones in this system."""
         return EntitySet(c for c in self.contents() if isinstance(c, Zone))
 
-    def objects(self) -> EntitySet[Object]:
+    def objects(self) -> 'EntitySet[Object]':
         """All objects in this system."""
         return EntitySet(c for c in self.contents() if isinstance(c, Object))
 
-    def bases(self) -> EntitySet[BaseSolar]:
+    def bases(self) -> 'EntitySet[BaseSolar]':
         """All bases in this system."""
         return EntitySet(c for c in self.objects() if isinstance(c, BaseSolar))
 
-    def planets(self) -> EntitySet[Planet]:
+    def planets(self) -> 'EntitySet[Planet]':
         """All planets in this system."""
         return EntitySet(c for c in self.objects() if isinstance(c, Planet))
 
-    def stars(self) -> EntitySet[Star]:
+    def stars(self) -> 'EntitySet[Star]':
         """All stars in this system."""
         return EntitySet(c for c in self.objects() if isinstance(c, Star))
 
-    def connections(self) -> Dict[Jump, System]:
+    def connections(self) -> 'Dict[Jump, System]':
         """The connections this system has to other systems."""
         return {c: c.destination_system() for c in self.objects() if isinstance(c, Jump)}
 
-    def lanes(self) -> List[List[TradeLaneRing]]:
+    def lanes(self) -> 'List[List[TradeLaneRing]]':
         """Return a list of lists of rings, where each nested list represents a complete trade lane and contains each
         ring in that lane in order."""
         rings = EntitySet(c for c in self.contents() if isinstance(c, TradeLaneRing))
@@ -103,4 +103,4 @@ class Group(Entity):
         return {f: r for r, f in self.rep}
 
 
-from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone
+from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing
