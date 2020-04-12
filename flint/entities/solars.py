@@ -7,15 +7,14 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, Optional, Union
 
-from .. import maps
 from . import Entity
-from ..formats import ini, dll
+from .. import formats, maps
 
 
 class Solar(Entity):
     """A solar is something fixed in space (this name comes from the DATA/SOLAR directory)."""
-    pos: maps.PosVector
-    rotate: maps.RotVector
+    pos: maps.PosVector  # position vector for this solar
+    rotate: maps.RotVector  # rotation vector for this solar (defaults to no rotation)
     _system: 'System'  # the system this solar resides in
 
     def sector(self) -> str:
@@ -24,7 +23,8 @@ class Solar(Entity):
 
 
 class Object(Solar):
-    """Generic class for a celestial body - a solid object in space."""
+    """Generic class for a celestial body - a solid object in space. Objects are automatically classified into
+    subclasses in `routines.get_system_contents`."""
     archetype: str
 
 
@@ -54,30 +54,29 @@ class TradeLaneRing(Object):
     prev_ring: Optional[str]
     next_ring: Optional[str]
 
-    def next_object(self):
-        return self._system.contents()[self.next_ring]
-
 
 class Wreck(Object):
-    """A wreck (called "secrets" in the game files is a lootable, wrecked ship floating in space."""
+    """A wreck (called "secrets" in the game files) is a lootable, wrecked ship floating in space."""
     loadout: str  # loot that is dropped upon being shot
 
 
 class BaseSolar(Object):
     """The physical representation of a Base."""
-    reputation: str  # the faction this base belongs to
-    base: str  # the base (in universe) this solar represents
+    reputation: str  # the nickname of the group this base belongs to
+    base: str  # the base (in universe.ini) this solar represents
 
-    def base(self):
-        return self._system.bases().get(self.nickname)
+    def universe_base(self) -> 'Base':
+        """The Base entity this solar represents."""
+        return routines.get_bases().get(self.base)
 
-    def owner(self):
+    def owner(self) -> 'Group':
+        """The Group entity that operates this base."""
         return routines.get_groups()[self.reputation]
 
     def infocard(self, plain=False) -> str:
         """Base infocards are actually in two parts, with ids_info referring to the specs of a base and ids_info + 1
         storing the actual description"""
-        lookup = dll.lookup if plain else dll.lookup_as_html
+        lookup = formats.dll.lookup if plain else formats.dll.lookup_as_html
 
         specifications = lookup(self.ids_info)
         try:
@@ -108,10 +107,10 @@ class PlanetaryBase(BaseSolar, Planet):
 
 
 class Zone(Solar):
+    """A zone is a region of space, possibly with effects attached."""
     size: Union[int, Tuple[int, int], Tuple[int, int, int]]
     shape: str  # one of: sphere, ring, box, ellipsoid
 
 
-from .universe import System
-
+from .universe import Base, Group, System
 from .. import routines
