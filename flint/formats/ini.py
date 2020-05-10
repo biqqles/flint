@@ -50,32 +50,32 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
 
         sections = raw.split(SECTION_NAME_START)
         for s in sections:
-            section_name, delimiter, entries = s.partition(SECTION_NAME_END)
-            if not delimiter or (DELIMITER_COMMENT in section_name) or \
-                    (target_section and section_name != target_section):
-                continue
-            section_entries = {}
-            for entry in entries.splitlines():
-                # discard comments and whitespace, then split into key-value pairs
-                entry = entry.split(DELIMITER_COMMENT, 1)[0].replace(' ', '').replace('\t', '')
-                key, delimiter, value = entry.partition(DELIMITER_KEY_VALUE)
-                if not delimiter:
+            try:
+                section_name, delimiter, entries = s.partition(SECTION_NAME_END)
+                if not delimiter or (DELIMITER_COMMENT in section_name) or \
+                        (target_section and section_name != target_section):
                     continue
+                section_entries = {}
+                for entry in entries.splitlines():
+                    # discard comments and whitespace, then split into key-value pairs
+                    entry = entry.split(DELIMITER_COMMENT, 1)[0].replace(' ', '').replace('\t', '')
+                    key, delimiter, value = entry.partition(DELIMITER_KEY_VALUE)
+                    if not delimiter:
+                        continue
 
-                try:
                     value = parse_value(value)
-                except ValueError as e:
-                    warnings.warn(f"Couldn't parse line {entry!r} in file {path!r}; {e.args[0]}")
-                    continue
 
-                # if key is new, add value to dictionary. If it has been seen before, add value to list instead
-                if fold_values and key not in section_entries:
-                    section_entries[key] = value
-                elif not isinstance(section_entries.get(key), list):
-                    section_entries[key] = [section_entries[key], value] if fold_values else [value]
-                else:
-                    section_entries[key].append(value)
-            result[section_name].append(section_entries)
+                    # if key is new, add value to dictionary. If it has been seen before, add value to list instead
+                    if fold_values and key not in section_entries:
+                        section_entries[key] = value
+                    elif not isinstance(section_entries.get(key), list):
+                        section_entries[key] = [section_entries[key], value] if fold_values else [value]
+                    else:
+                        section_entries[key].append(value)
+                result[section_name].append(section_entries)
+            except ValueError as e:
+                warnings.warn(f"Couldn't parse line in {path!r}; {e.args[0]}")
+                continue
     return result if not target_section else result[target_section]
 
 
@@ -122,40 +122,40 @@ def fetch(paths: Any, target_section: str, keys: set = frozenset(), multivalued_
         sections = raw.split(SECTION_NAME_START)
 
         for section in sections:
-            if section:
-                section_container = {key: [] for key in multivalued_keys}
+            try:
+                if section:
+                    section_container = {key: [] for key in multivalued_keys}
 
-                lines = section.splitlines()  # weirdly some files use UNIX \n and some the Windows \r\n
-                section_name = lines.pop(0)[:-1]  # remove remaining ] off first line of section to reveal section name
+                    lines = section.splitlines()  # weirdly some files use UNIX \n and some the Windows \r\n
+                    section_name = lines.pop(0)[:-1]  # remove remaining ] off first line of section to reveal section name
 
-                if section_name == target_section:
-                    for line in lines:
-                        # strip comments and whitespace
-                        line = line.split(DELIMITER_COMMENT)[0].replace(' ', '').replace('\t', '')
-                        key, delimiter, value = line.partition(DELIMITER_KEY_VALUE)  # split into key and value
+                    if section_name == target_section:
+                        for line in lines:
+                            # strip comments and whitespace
+                            line = line.split(DELIMITER_COMMENT)[0].replace(' ', '').replace('\t', '')
+                            key, delimiter, value = line.partition(DELIMITER_KEY_VALUE)  # split into key and value
 
-                        if not delimiter:  # discard comment lines, empty lines and valueless keys
-                            continue
+                            if not delimiter:  # discard comment lines, empty lines and valueless keys
+                                continue
 
-                        try:
                             value = parse_value(value)
-                        except ValueError as e:
-                            warnings.warn(f"Couldn't parse line {line!r} in file {path!r}; {e.args[0]}")
+
+                            if key in multivalued_keys:
+                                section_container[key].append(value)
+                            elif key in keys:
+                                section_container[key] = value
+
+                            # break if we have everything we need from the section
+                            if len(section_container) == len(keys) and not multivalued_keys:
+                                break
+                        if target_key and target_key not in section_container:
                             continue
-
-                        if key in multivalued_keys:
-                            section_container[key].append(value)
-                        elif key in keys:
-                            section_container[key] = value
-
-                        # break if we have everything we need from the section
-                        if len(section_container) == len(keys) and not multivalued_keys:
-                            break
-                    if target_key and target_key not in section_container:
+                        file_container.append(section_container)
+                    else:
                         continue
-                    file_container.append(section_container)
-                else:
-                    continue
+            except ValueError as e:
+                warnings.warn(f"Couldn't parse line in {path!r}; {e.args[0]}")
+                continue
         result_container.extend(file_container)
     return result_container
 
