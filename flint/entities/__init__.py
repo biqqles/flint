@@ -7,16 +7,18 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
+from typing import TypeVar, Iterable, Generic, Hashable
 import collections.abc
 import operator
 import pprint
-from typing import TypeVar, Iterable, Dict, Generic, Hashable
 
-from ..dynamic import CachedDataclass
+from dataclassy import dataclass
+
 from ..formats import dll
 
 
-class Entity(metaclass=CachedDataclass):
+@dataclass(kwargs=True, frozen=True)
+class Entity:
     """The base data class for any entity defined within Freelancer, distinguished by its nickname.
 
     Attributes (fields) of subclasses should only be used for the "primitive" attributes that define an entity in the
@@ -51,30 +53,6 @@ class Entity(metaclass=CachedDataclass):
 
     def __eq__(self, other) -> bool:
         return self.nickname == other.nickname
-
-    @classmethod
-    def from_dict(cls, parameters, **kwargs):
-        """Initialise an Entity subclass from an "imprecise" dict (one that contains at least all the class' fields,
-        possibly plus others. This could be accomplished more easily and efficiently if dataclass generated an init
-        including **kwargs, but it doesn't. Like init, all fields must be filled except ones with defaults"""
-        all_annotations = cls.__all_annotations__()
-        parameters.update(kwargs)  # kwargs (explicitly defined keys) has precedence
-        for k in set(parameters):  # copy keys so we can modify dict as we iterate
-            if k not in all_annotations:
-                del parameters[k]
-
-        try:
-            return cls(**parameters)
-        except TypeError as e:
-            e.args = (e.args[0] + f' for entity with nickname {parameters["nickname"]}',)
-            raise e
-
-    @classmethod
-    def __all_annotations__(cls) -> Dict[str, type]:
-        """Get all the annotations for this class up its inheritance tree."""
-        all_bases = list(cls.__mro__)
-        all_bases.remove(object)
-        return {a: t for b in all_bases for a, t in b.__annotations__.items()}
 
 
 T = TypeVar('T')

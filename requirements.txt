@@ -1,2 +1,2 @@
-dataclasses
+dataclassy
 deconstruct>0.2

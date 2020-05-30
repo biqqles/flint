@@ -6,7 +6,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Dict, List, Tuple
 import os
-import dataclasses
+
+from dataclassy import Internal
 
 from .. import paths
 from .. import routines
@@ -68,7 +69,7 @@ class System(Entity):
 class Base(Entity):
     """A space station or colonised planet, operated by a Group."""
     system: str
-    _market: Dict = dataclasses.field(repr=False)
+    _market: Dict
 
     def infocard(self, plain=False) -> str:
         return self.solar().infocard(plain)
@@ -91,7 +92,7 @@ class Base(Entity):
 
 class Group(Entity):
     """A Group, also known as a faction, is an organisation in the Freelancer universe."""
-    rep: List[Tuple[float, str]] = dataclasses.field(repr=False)  # float is between 1 (adored) and -1 (reviled)
+    rep: Internal[List[Tuple[float, str]]]  # float is between 1 (adored) and -1 (reviled)
 
     def bases(self) -> EntitySet[Base]:
         """All bases owned by this group."""

@@ -5,11 +5,10 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# todo: equipment
+# todo: Equipment.
 """
-import dataclasses
+from typing import Dict, List, Any, Tuple, Optional
 import math
-from typing import Dict, List, Any, Tuple, Optional, Iterator
 
 from . import Entity
 from .. import paths
@@ -21,7 +20,7 @@ class Good(Entity):
     (ABSTRACT.)"""
     item_icon: Optional[str]  # path to icon, relative to DATA
     price: int  # the default price for this good, pre market multiplier
-    _market: Dict[bool, Tuple] = dataclasses.field(repr=False)
+    _market: Dict[bool, Tuple]
 
     def icon_path(self) -> str:
         """The absolute path to the .3db file containing this item's icon."""
@@ -57,8 +56,8 @@ class Ship(Good):
     shield_battery_limit: int
     steering_torque: Tuple[float, float, float]
     angular_drag: Tuple[float, float, float]
-    _hull: Dict[str, Any] = dataclasses.field(repr=False)
-    _package: Dict[str, Any] = dataclasses.field(repr=False)
+    _hull: Dict[str, Any]
+    _package: Dict[str, Any]
 
     def infocard(self, plain=False) -> str:
         """I have no idea why the order these are displayed in is not ascending, but anyway."""

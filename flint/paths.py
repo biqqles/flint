@@ -81,7 +81,7 @@ def generate_index():
     freelancer_ini = os.path.join(install, 'EXE/freelancer.ini')
 
     root = ini.parse(freelancer_ini, 'freelancer', fold_values=False)[0]  # todo: also look at 'data path'
-    resources = ini.fetch(freelancer_ini, 'resources', multivalued_keys={'dll'})[0]['dll']
+    resources = ini.parse(freelancer_ini, 'resources')[0]['dll']
     data = ini.parse(freelancer_ini, 'data', fold_values=False)[0]
     data.update(root)
 

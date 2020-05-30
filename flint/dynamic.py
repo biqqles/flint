@@ -67,13 +67,3 @@ class cached_property:
         result = self.method(instance)
         setattr(instance, self.method.__name__, result)
         return result
-
-
-class CachedDataclass(type):
-    """A metaclass that applies the builtin `dataclass` decorator to the given class and the `cached_property`
-    decorator defined within to all its methods."""
-    # todo probably re-implement dataclass myself to use __slots__
-    def __new__(mcs, name, bases, dict_):
-        """Modify `__dict__` by wrapping non-builtin methods in `cached_property`, then apply `dataclass` and return."""
-        return dataclass(super().__new__(mcs, name, bases, dict_), eq=False)
-

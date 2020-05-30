@@ -11,11 +11,11 @@ world.
 
 Freelancer actually stores INIs in a compressed binary-INI (BINI)
 format, but will accept text INIs happily. This is therefore the
-format most used by mods
+format most used by mods as it facilitates editing.
 """
-import os
+from typing import Union, List, Set
 from collections import defaultdict
-from typing import Any, Union, List
+import os
 import warnings
 
 from . import bini
@@ -27,10 +27,14 @@ SECTION_NAME_END = ']'
 
 
 def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=True):
-    """Interpret the inis in `paths` and return a parsed representation of their structure:
-    If `fold_values` is True, fold keys with single values into single types (not lists), if False all values
-    will be lists. The former is more consistent, so easier to process with minimal code, the latter is more useful
-    when the individual values are important."""
+    """Parse the Freelancer-style INI file(s) at `paths`.
+
+    INIs are parsed to a dictionary of section names mapping to a list of dicts representing the entries of those
+    sections. In other words, {section_name -> [{entry_name -> entry_value}]}.
+
+    If an entry appears multiple times in a section (i.e. it has multiple values) its value becomes a list of those
+    values, while entries with single values are "folded" into primitives. If `fold_values` is False, all entry values
+    will be lists. This aids with processing in some cases."""
     result = defaultdict(list)
 
     if isinstance(paths, str):  # accept both single paths and lists of paths
@@ -79,85 +83,20 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
     return result if not target_section else result[target_section]
 
 
-def fetch(paths: Any, target_section: str, keys: set = frozenset(), multivalued_keys: set = frozenset(),
-          target_key: str = None):
-    """A simple, speedy parser for Freelancer-style INIs.
+def fetch(paths: Union[str, List[str]], target_section: str, target_keys: Set[str]):
+    """Fetch only a specified section (`target_section`) and keys (`target_keys`) from the Freelancer-style INI file(s)
+    at `paths`.
 
-    # todo: another hanger-on until a replacement for dataclasses is ready
-
-    Freelancer-style INIs have a number of features that make them unsuitable for use with Python's built-in
-    configparser, most importantly repeated section names and repeated (in other words, multi-valued) keys.
-
-    paths - a path to, or list thereof, the ini(s) to be parsed
-    target_section - the name of the section to be matched (case sensitive)
-    keys - a set of keys to get the values of (case sensitive)
-    multivalued_keys - a set of keys for which multiple values are expected (duplicate keys in the section) (case sensitive)
-    target_key - a key that the section must have to be matched (case sensitive)
-    form_dict - form a lookup table instead of a list of dictionaries
-
-    Returns a list of dicts, with each dict representing one matched section.
-    This function aims to mimic the behaviour of Freelancer's ini parser: anything which it accepts should be accepted;
-    anything else should throw an error."""
-
-    if isinstance(paths, str):  # accept both single paths and lists of paths
-        paths = [paths]
-
-    if target_key:
-        keys.add(target_key)
-
-    result_container = []
-
-    for path in paths:
-        file_container = []
-        # open file
-        assert os.path.isfile(path)
-        with open(path, 'rb') as f:
-            data = f.read()
-            # Check for 'BINI' magic number. This function can't read these files yet
-            if data[:4] == b'BINI':
-                raw = bini.dump(path).lower()
-            else:
-                raw = data.decode('windows-1252').lower()
-
-        sections = raw.split(SECTION_NAME_START)
-
-        for section in sections:
-            try:
-                if section:
-                    section_container = {key: [] for key in multivalued_keys}
-
-                    lines = section.splitlines()  # weirdly some files use UNIX \n and some the Windows \r\n
-                    section_name = lines.pop(0)[:-1]  # remove remaining ] off first line of section to reveal section name
-
-                    if section_name == target_section:
-                        for line in lines:
-                            # strip comments and whitespace
-                            line = line.split(DELIMITER_COMMENT)[0].replace(' ', '').replace('\t', '')
-                            key, delimiter, value = line.partition(DELIMITER_KEY_VALUE)  # split into key and value
-
-                            if not delimiter:  # discard comment lines, empty lines and valueless keys
-                                continue
-
-                            value = parse_value(value)
-
-                            if key in multivalued_keys:
-                                section_container[key].append(value)
-                            elif key in keys:
-                                section_container[key] = value
-
-                            # break if we have everything we need from the section
-                            if len(section_container) == len(keys) and not multivalued_keys:
-                                break
-                        if target_key and target_key not in section_container:
-                            continue
-                        file_container.append(section_container)
-                    else:
-                        continue
-            except ValueError as e:
-                warnings.warn(f"Couldn't parse line in {path!r}; {e.args[0]}")
-                continue
-        result_container.extend(file_container)
-    return result_container
+    Sections and keys which do not match the targets are dropped. The result is a list of dictionaries of matching keys
+    and their values for each section instance."""
+    parsed = parse(paths)
+    result = []
+    for section_name, sections in parsed.items():
+        if section_name == target_section:
+            for entries in sections:
+                matching_entries = {n: v for n, v in entries.items() if n in target_keys}
+                result.append(matching_entries)
+    return result
 
 
 def parse_value(entry_value: str):

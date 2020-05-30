@@ -51,8 +51,8 @@ class Jump(Object):
 class TradeLaneRing(Object):
     """A trade lane ring is a component of a trade lane, a structure which provides "superluminal travel" within a
     system."""
-    prev_ring: Optional[str]
-    next_ring: Optional[str]
+    prev_ring: Optional[str] = None
+    next_ring: Optional[str] = None
 
 
 class Wreck(Object):
@@ -88,7 +88,7 @@ class BaseSolar(Object):
 
 class Spheroid(Object):
     """A star or planet. (Abstract.)"""
-    atmosphere_range: int
+    atmosphere_range: int = 0
 
 
 class Star(Spheroid):

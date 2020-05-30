@@ -22,18 +22,17 @@ from .maps import PosVector, RotVector
 
 
 @cached
-def get_systems(meta=False) -> EntitySet[System]:
+def get_systems() -> EntitySet[System]:
     """All systems defined in the game files."""
-    systems = ini.fetch(paths.inis['universe'], 'system', {'nickname', 'strid_name', 'ids_info', 'navmapscale'},
-                        target_key='file')
+    systems = ini.parse(paths.inis['universe'], 'system')
 
-    return EntitySet(System(**s, ids_name=s.pop('strid_name')) for s in systems)
+    return EntitySet(System(**s, ids_name=s.pop('strid_name')) for s in systems if 'file' in s)
 
 
 @cached
 def get_bases() -> EntitySet[Base]:
     """All bases defined in the game files."""
-    bases = ini.fetch(paths.inis['universe'], 'base', {'nickname', 'strid_name', 'system'})
+    bases = ini.parse(paths.inis['universe'], 'base')
 
     return EntitySet(Base(**b, ids_name=b.pop('strid_name'), ids_info=None, _market=_get_markets()[b['nickname']])
                      for b in bases)
@@ -43,7 +42,7 @@ def get_bases() -> EntitySet[Base]:
 def get_commodities() -> EntitySet[Commodity]:
     """All commodities defined in the game files."""
     path = paths.construct_path('DATA/EQUIPMENT/select_equip.ini')
-    commodities = ini.fetch(path, 'commodity', {'nickname', 'ids_name', 'ids_info', 'volume'})
+    commodities = ini.parse(path, 'commodity')
 
     result = []
 
@@ -58,17 +57,14 @@ def get_commodities() -> EntitySet[Commodity]:
 @cached
 def get_groups() -> EntitySet[Group]:
     """All groups (i.e. factions) defined in the game files."""
-    groups = ini.fetch(paths.inis['initial_world'], 'group', {'nickname', 'ids_name', 'ids_info'}, {'rep'})
+    groups = ini.parse(paths.inis['initial_world'], 'group')
     return EntitySet(Group(**g) for g in groups)
 
 
 @cached
 def get_ships() -> EntitySet[Ship]:
     """All ships defined in the game files."""
-    stats = ini.fetch(paths.inis['ships'], 'ship',
-                      {'nickname', 'ids_name', 'ids_info', 'nanobot_limit', 'shield_battery_limit', 'hold_size',
-                       'hit_pts', 'ship_class', 'steering_torque', 'angular_drag', 'ids_info1', 'ids_info2',
-                       'ids_info3'}, target_key='ids_info3')
+    stats = ini.parse(paths.inis['ships'], 'ship')
     result: List[Ship] = []
 
     for s in stats:
@@ -76,10 +72,11 @@ def get_ships() -> EntitySet[Ship]:
             hull = _get_goods()[s['nickname']]
             package = _get_goods()[hull['nickname']]
             market = _get_markets()[package['nickname']]
-        except KeyError:
-            # ship not sold anywhere. todo: how should we handle this?
+            ship = Ship(**s, item_icon=hull['item_icon'], price=hull['price'], _market=market, _hull=hull,
+                        _package=package)
+        except (KeyError, TypeError):
+            # ship not sold anywhere or lacking infocards todo: how should we handle this?
             continue
-        ship = Ship(**s, _market=market, item_icon=hull['item_icon'], price=hull['price'], _hull=hull, _package=package)
         result.append(ship)
 
     return EntitySet(result)
@@ -111,25 +108,24 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
         o = modify_solar(o)
         keys = o.keys()
         if {'base', 'reputation', 'space_costume'} <= keys:
-            result.append(BaseSolar.from_dict(o))
+            result.append(BaseSolar(**o))
         elif 'goto' in keys:
-            result.append(Jump.from_dict(o))
+            result.append(Jump(**o))
         elif 'prev_ring' in keys or 'next_ring' in keys:
-            result.append(TradeLaneRing.from_dict(o, prev_ring=o.get('prev_ring'), next_ring=o.get('next_ring')))
+            result.append(TradeLaneRing(**o))
         elif 'loadout' in keys and 'reputation' not in keys:
-            result.append(Wreck.from_dict(o))
+            result.append(Wreck(**o))
         elif 'star' in keys:
-            result.append(Star.from_dict(o, atmosphere_range=o.get('atmosphere_range', 0)))
+            result.append(Star(**o))
         elif 'spin' in keys:
-            o.setdefault('atmosphere_range', 0)
-            result.append(PlanetaryBase.from_dict(o) if 'base' in keys else Planet.from_dict(o))
+            result.append(PlanetaryBase(**o) if 'base' in keys else Planet(**o))
         else:
-            result.append(Object.from_dict(o))
+            result.append(Object(**o))
 
     for z in contents.get('zone', []):
         z = modify_solar(z)
         if 'ids_name' in z.keys():
-            result.append(Zone.from_dict(z))
+            result.append(Zone(**z))
 
     return EntitySet(result)
 
@@ -138,8 +134,7 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
 def _get_goods() -> Dict[str, Dict]:
     # This is an internal method. A good is anything that can be bought or sold.
     # get_commodities, get_ships and get_equipment link goods up to objects
-    goods = ini.fetch(paths.inis['goods'],  # todo: equipment too
-                      'good', {'nickname', 'price', 'item_icon', 'ship', 'price', 'hull', 'category'}, {'addon'})
+    goods = ini.parse(paths.inis['goods'], 'good', fold_values=True)  # todo: equipment too
 
     result = {}
     for g in goods:
@@ -157,11 +152,11 @@ def _get_goods() -> Dict[str, Dict]:
 @cached
 def _get_markets() -> Dict[str, Dict[bool, List[Tuple[str, int]]]]:
     """Result is of the form base/good nickname -> {sold -> (good/base nickname, price at base}}"""
-    market = ini.fetch(paths.inis['markets'], 'basegood', {'base'}, {'marketgood'}, target_key='base')
+    market = ini.parse(paths.inis['markets'], 'basegood', fold_values=False)
     goods = _get_goods()
     result = defaultdict(lambda: {True: [], False: []})
     for b in market:
-        base = b['base']
+        base = b['base'][0]
         base_market = b['marketgood']
         for good, min_rank, min_rep, min_stock, max_stock, depreciate, multiplier, *_ in base_market:
             if not multiplier:
