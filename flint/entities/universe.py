@@ -74,11 +74,16 @@ class Base(Entity):
     def infocard(self, plain=False) -> str:
         return self.solar().infocard(plain)
 
+    def system_(self) -> System:
+        """The entity of the system this base resides in."""
+        return routines.get_systems()[self.system]
+
     def solar(self) -> 'BaseSolar':
         """Confusingly, Freelancer defines bases separately to their physical representation."""
-        return routines.get_systems()[self.system].bases().where(base=self.nickname).arb
+        return self.system_().bases().where(base=self.nickname).arb
 
     def sector(self):
+        """The sector of this base's solar in its system."""
         return self.solar().sector()
 
     def sells(self) -> Dict[str, int]:
