@@ -69,9 +69,9 @@ class BaseSolar(Object):
         """The Base entity this solar represents."""
         return routines.get_bases().get(self.base)
 
-    def owner(self) -> 'Group':
-        """The Group entity that operates this base."""
-        return routines.get_groups()[self.reputation]
+    def owner(self) -> 'Faction':
+        """The Faction entity that operates this base."""
+        return routines.get_factions()[self.reputation]
 
     def infocard(self, plain=False) -> str:
         """Base infocards are actually in two parts, with ids_info referring to the specs of a base and ids_info + 1
@@ -112,5 +112,5 @@ class Zone(Solar):
     shape: str  # one of: sphere, ring, box, ellipsoid
 
 
-from .universe import Base, Group, System
+from .universe import Base, Faction, System
 from .. import routines

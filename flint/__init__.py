@@ -7,13 +7,13 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 import warnings
 from . import paths
-from .routines import get_commodities, get_bases, get_ships, get_systems, get_groups
+from .routines import get_commodities, get_bases, get_ships, get_systems, get_factions
 
 warnings.formatwarning = lambda message, *args, **kwargs: f'{message!s}\n'  # patch formatter to only show message
 
 shorthand = {'bases': get_bases,
              'commodities': get_commodities,
-             'groups': get_groups,
+             'factions': get_factions,
              'ships': get_ships,
              'systems': get_systems}
 

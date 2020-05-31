@@ -45,7 +45,7 @@ flint defines several "core functions":
 |**`flint.get_systems()`**|`EntitySet[System]`   |All systems defined in the game files    |
 |**`flint.get_commodities()`**|`EntitySet[Commodity]`|All commodities defined in the game files|
 |**`flint.get_ships()`**  |`EntitySet[Ship]`     |All ships defined in the game files      |
-|**`flint.get_groups()`** |`EntitySet[Group]`    |All groups defined in the game files     |
+|**`flint.get_factions()`**|`EntitySet[Faction]`    |All factions defined in the game files     |
 
 (If you are on Python 3.7 or above, these have handy shorthands of the form `flint.bases`, `flint.systems`, `flint.commodities` etc.)
 
@@ -112,7 +112,7 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |**`lanes()`**       |`List[List[TradeLaneRing]]`|A list of lists of rings, where each nested list represents a complete trade lane and contains each ring in that lane in order|
 
 #### Base(Entity)
->A space station or colonised planet, operated by a [Group](#groupentity).
+>A space station or colonised planet, operated by a [Faction](#groupentity).
 >
 |Attributes          |Type                  |Notes                                                       |
 |:-------------------|----------------------|------------------------------------------------------------|
@@ -125,8 +125,8 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |**`buys()`**        |`Dict[str, int]`      |The goods this base buys, of the form {good -> price}       |
 |**`sells()`**       |`Dict[str, int]`      |The goods this base sells, of the form {good -> price}      |
 
-#### Group(Entity)
->A Group, also known as a faction, is an organisation in the Freelancer universe.
+#### Faction(Entity)
+>A faction, also known as a group, is an organisation in the Freelancer universe, possibly owning bases or controlling territory.
 >
 |Attributes          |Type                  |Notes                                                       |
 |:-------------------|----------------------|------------------------------------------------------------|
@@ -209,7 +209,7 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |`reputation`        | str                  |The nickname of the group this base belongs to              |
 |`base`              |`str`                 |Nickname for the base (in universe.ini) this solar represents|
 |**Methods**         |                      |                                                            |
-|**`owner`**         |`Group`               |The Group entity that operates this base                    |
+|**`owner`**         |`Faction`               |The Faction entity that operates this base                    |
 |**`universe_base`** |`Base`                |The Base entity this solar represents                       |
 
 #### Jump(Object)

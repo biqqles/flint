@@ -67,7 +67,7 @@ class System(Entity):
 
 
 class Base(Entity):
-    """A space station or colonised planet, operated by a Group."""
+    """A space station or colonised planet, operated by a Faction."""
     system: str
     _market: Dict
 
@@ -95,8 +95,9 @@ class Base(Entity):
         return dict(self._market[False])
 
 
-class Group(Entity):
-    """A Group, also known as a faction, is an organisation in the Freelancer universe."""
+class Faction(Entity):
+    """A faction, also known as a group, is an organisation in the Freelancer universe, possibly owning bases or
+    controlling territory."""
     rep: Internal[List[Tuple[float, str]]]  # float is between 1 (adored) and -1 (reviled)
 
     def bases(self) -> EntitySet[Base]:

@@ -109,4 +109,4 @@ class EntitySet(collections.abc.Mapping, Generic[T]):
 # exported types
 from .goods import Ship, Commodity
 from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase, TradeLaneRing, Wreck, Zone
-from .universe import Base, System, Group
+from .universe import Base, System, Faction

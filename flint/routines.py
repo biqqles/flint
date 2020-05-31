@@ -16,7 +16,7 @@ from .dynamic import cached
 from .formats import ini
 from .entities import EntitySet
 from .entities import Commodity, Ship
-from .entities import Base, System, Group
+from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
 from .maps import PosVector, RotVector
 
@@ -55,10 +55,10 @@ def get_commodities() -> EntitySet[Commodity]:
 
 
 @cached
-def get_groups() -> EntitySet[Group]:
+def get_factions() -> EntitySet[Faction]:
     """All groups (i.e. factions) defined in the game files."""
     groups = ini.parse(paths.inis['initial_world'], 'group')
-    return EntitySet(Group(**g) for g in groups)
+    return EntitySet(Faction(**g) for g in groups)
 
 
 @cached
