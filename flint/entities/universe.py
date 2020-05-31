@@ -9,6 +9,7 @@ import os
 
 from dataclassy import Internal
 
+from ..formats import dll
 from .. import paths
 from .. import routines
 from . import Entity, EntitySet
@@ -98,16 +99,21 @@ class Base(Entity):
 class Faction(Entity):
     """A faction, also known as a group, is an organisation in the Freelancer universe, possibly owning bases or
     controlling territory."""
+    ids_short_name: int  # resource id for short form name
     rep: Internal[List[Tuple[float, str]]]  # float is between 1 (adored) and -1 (reviled)
 
+    def short_name(self) -> str:
+        """The short form of this faction's name."""
+        return dll.lookup(self.ids_short_name)
+
     def bases(self) -> EntitySet[Base]:
-        """All bases owned by this group."""
+        """All bases owned by this faction."""
         return EntitySet(b for s in routines.get_systems() for b in s.bases().where(reputation=self.nickname))
 
-    def rep_sheet(self) -> Dict[str, float]:
-        """How this faction views other factions - its "reputation sheet". float is between 1 (adored) and -1
-        (reviled)"""
-        return {f: r for r, f in self.rep}
+    def rep_sheet(self) -> Dict['Faction', float]:
+        """How this faction views other factions - its reputation sheet."""
+        factions = routines.get_factions()
+        return {factions[faction]: rep for rep, faction in self.rep if faction in factions}
 
 
 from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing

@@ -112,7 +112,7 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |**`lanes()`**       |`List[List[TradeLaneRing]]`|A list of lists of rings, where each nested list represents a complete trade lane and contains each ring in that lane in order|
 
 #### Base(Entity)
->A space station or colonised planet, operated by a [Faction](#groupentity).
+>A space station or colonised planet, operated by a [Faction](#factionentity).
 >
 |Attributes          |Type                  |Notes                                                       |
 |:-------------------|----------------------|------------------------------------------------------------|
@@ -130,10 +130,12 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 >
 |Attributes          |Type                  |Notes                                                       |
 |:-------------------|----------------------|------------------------------------------------------------|
-|`rep`               |`List[str]`           |                                                            |
+|`ids_short_name`    |`Tuple[float, str]]`  |Resource id for short form name                             |
+|`rep`               |`Tuple[float, str]]`  |Float is between 1 (adored) and -1 (reviled)                |
 |**Methods**         |                      |                                                            |
-|**`bases()`**       |`EntitySet[BaseSolar]`|Bases owned by this group                                   |
-|**`rep_sheet()`**   |`Dict[str, float]`    |The goods this base buys, of the form {good -> price}       |
+|**`short_name()`**  |`str`                 |The short form of this faction's name                       |
+|**`bases()`**       |`EntitySet[BaseSolar]`|Bases owned by this faction                                 |
+|**`rep_sheet()`**   |`Dict[Faction, float]`|How this faction views other factions - its reputation sheet|
 
 ---
 
@@ -205,11 +207,10 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 >
 |Attributes          |Type                  |Notes                                                       |
 |:-------------------|----------------------|------------------------------------------------------------|
-|`reputation`        |`str`                 |                                                            |
-|`reputation`        | str                  |The nickname of the group this base belongs to              |
+|`reputation`        | str                  |The nickname of the faction this base belongs to            |
 |`base`              |`str`                 |Nickname for the base (in universe.ini) this solar represents|
 |**Methods**         |                      |                                                            |
-|**`owner`**         |`Faction`               |The Faction entity that operates this base                    |
+|**`owner`**         |`Faction`             |The Faction entity that operates this base                  |
 |**`universe_base`** |`Base`                |The Base entity this solar represents                       |
 
 #### Jump(Object)
