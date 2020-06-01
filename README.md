@@ -120,7 +120,8 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |`_market`           |`Dict`                |                                                            |
 |**Methods**         |                      |                                                            |
 |**`system_()`**     |`System`              |The entity of the system this base resides in               |
-|**`solar()`**       |`BaseSolar`           |Confusingly, Freelancer defines bases separately to their physical representation|
+|**`has_solar()`**   |`bool`                |Whether this base has a physical solar                      |
+|**`solar()`**       |`Optional[BaseSolar]` |Confusingly, Freelancer defines bases separately to their physical representation|
 |**`sector()`**      |`System`              |The sector of this base's solar in its system               |
 |**`buys()`**        |`Dict[str, int]`      |The goods this base buys, of the form {good -> price}       |
 |**`sells()`**       |`Dict[str, int]`      |The goods this base sells, of the form {good -> price}      |

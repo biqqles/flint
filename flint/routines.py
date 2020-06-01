@@ -88,17 +88,11 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
     result = []
     contents = ini.parse(system.definition_path())
 
-    rot0 = RotVector(0, 0, 0)
-
     # categorise objects based on their keys
-    # from_keys and using get() for optional keys is a bit of a hack that has to be used until I release a replacement
-    # for dataclasses
-
     def modify_solar(solar: Dict):
         """Common dict modifications for all solar types."""
         solar['_system'] = system
         solar['pos'] = PosVector(*o['pos'])
-        solar.setdefault('rotate', rot0)
         solar.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
         return solar
 

@@ -4,7 +4,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import os
 
 from dataclassy import Internal
@@ -79,11 +79,15 @@ class Base(Entity):
         """The entity of the system this base resides in."""
         return routines.get_systems()[self.system]
 
-    def solar(self) -> 'BaseSolar':
+    def solar(self) -> Optional['BaseSolar']:
         """Confusingly, Freelancer defines bases separately to their physical representation."""
         return self.system_().bases().where(base=self.nickname).arb
 
-    def sector(self):
+    def has_solar(self) -> bool:
+        """Whether this base has a physical solar."""
+        return self.solar() is not None
+
+    def sector(self) -> str:
         """The sector of this base's solar in its system."""
         return self.solar().sector()
 

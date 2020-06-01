@@ -14,7 +14,7 @@ from .. import formats, maps
 class Solar(Entity):
     """A solar is something fixed in space (this name comes from the DATA/SOLAR directory)."""
     pos: maps.PosVector  # position vector for this solar
-    rotate: maps.RotVector  # rotation vector for this solar (defaults to no rotation)
+    rotate: maps.RotVector = maps.RotVector(0, 0, 0)  # rotation vector for this solar (defaults to no rotation)
     _system: 'System'  # the system this solar resides in
 
     def sector(self) -> str:
