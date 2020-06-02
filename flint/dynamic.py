@@ -11,7 +11,6 @@ flint.
 import datetime
 import os
 import pickle
-from dataclasses import dataclass
 from functools import wraps
 from types import FunctionType
 from typing import Any, Dict

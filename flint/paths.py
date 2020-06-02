@@ -86,4 +86,4 @@ def generate_index():
     data.update(root)
 
     dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources, 1)})  # dll 0 is freelancer.exe itself
-    inis.update({category: list(construct_path('DATA', f) for f in files) for category, files in data.items()})
+    inis.update({category: tuple(construct_path('DATA', f) for f in files) for category, files in data.items()})

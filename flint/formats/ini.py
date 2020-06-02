@@ -15,17 +15,14 @@ format most used by mods as it facilitates editing.
 """
 from typing import Union, List, Set
 from collections import defaultdict
+from functools import lru_cache
 import os
 import warnings
 
 from . import bini
 
-DELIMITER_KEY_VALUE = '='
-DELIMITER_COMMENT = ';'
-SECTION_NAME_START = '['
-SECTION_NAME_END = ']'
 
-
+@lru_cache
 def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=True):
     """Parse the Freelancer-style INI file(s) at `paths`.
 
@@ -111,3 +108,9 @@ def parse_value(entry_value: str):
             return float(v)
 
     return tuple(map(auto_cast, entry_value.split(','))) if ',' in entry_value else auto_cast(entry_value)
+
+
+DELIMITER_KEY_VALUE = '='
+DELIMITER_COMMENT = ';'
+SECTION_NAME_START = '['
+SECTION_NAME_END = ']'
