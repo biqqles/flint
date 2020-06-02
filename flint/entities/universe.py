@@ -66,6 +66,12 @@ class System(Entity):
                     lanes[first_ring].append(current_ring)
         return [[f, *r] for f, r in lanes.items()]  # flatten grouping dict into list of lists
 
+    def region(self) -> str:
+        """The name of the region this system is in, extracted from the infocard."""
+        *_, rest = self.infocard(plain=True).partition('<TRA data="1" mask="1" def="-2"/><TEXT>')
+        region, *_ = rest.partition('</TEXT>')
+        return region.title() if region else 'Unknown'
+
 
 class Base(Entity):
     """A space station or colonised planet, operated by a Faction."""

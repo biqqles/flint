@@ -110,6 +110,8 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |**`stars()`**       |`EntitySet[Star]`     |All stars in this system                                    |
 |**`connections()`** |`Dict[Jump, str]`     |The connections this system has to other systems            |
 |**`lanes()`**       |`List[List[TradeLaneRing]]`|A list of lists of rings, where each nested list represents a complete trade lane and contains each ring in that lane in order|
+|**`region()`**      |`str`                 |The name of the region this system is in, extracted from the infocard|
+
 
 #### Base(Entity)
 >A space station or colonised planet, operated by a [Faction](#factionentity).
