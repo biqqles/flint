@@ -13,7 +13,7 @@ Freelancer actually stores INIs in a compressed binary-INI (BINI)
 format, but will accept text INIs happily. This is therefore the
 format most used by mods as it facilitates editing.
 """
-from typing import Union, List, Set
+from typing import Union, List, Set, Dict, Any, Tuple
 from collections import defaultdict
 from functools import lru_cache
 import os
@@ -23,7 +23,7 @@ from . import bini
 
 
 @lru_cache
-def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=True):
+def parse(paths: Union[str, List[str]], fold_values=True) -> Dict[str, List[Dict[str, Any]]]:
     """Parse the Freelancer-style INI file(s) at `paths`.
 
     INIs are parsed to a dictionary of section names mapping to a list of dicts representing the entries of those
@@ -43,7 +43,7 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
             data = f.read(4)
             if data[:4] == b'BINI':
                 bini_data = bini.parse(path, fold_values)
-                return bini_data if not target_section else bini_data[target_section]
+                return bini_data
             f.seek(0)
             data = f.read()
         raw = data.decode('windows-1252').lower()
@@ -53,8 +53,7 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
         for s in sections:
             try:
                 section_name, delimiter, entries = s.partition(SECTION_NAME_END)
-                if not delimiter or (DELIMITER_COMMENT in section_name) or \
-                        (target_section and section_name != target_section):
+                if not delimiter or (DELIMITER_COMMENT in section_name):
                     continue
                 section_entries = {}
                 for entry in entries.splitlines():
@@ -77,10 +76,10 @@ def parse(paths: Union[str, List[str]], target_section: str = '', fold_values=Tr
             except ValueError as e:
                 warnings.warn(f"Couldn't parse line in {path!r}; {e.args[0]}")
                 continue
-    return result if not target_section else result[target_section]
+    return result
 
 
-def fetch(paths: Union[str, List[str]], target_section: str, target_keys: Set[str]):
+def fetch(paths: Union[str, List[str]], target_section: str, target_keys: Set[str]) -> List[Dict[str, Any]]:
     """Fetch only a specified section (`target_section`) and keys (`target_keys`) from the Freelancer-style INI file(s)
     at `paths`.
 
@@ -96,7 +95,7 @@ def fetch(paths: Union[str, List[str]], target_section: str, target_keys: Set[st
     return result
 
 
-def parse_value(entry_value: str):
+def parse_value(entry_value: str) -> Union[Any, Tuple]:
     """Parse an entry value (consisting either of a string, int or float or a tuple of such) using and return it as a
     Python object."""
     def auto_cast(v: str):

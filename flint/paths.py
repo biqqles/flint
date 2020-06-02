@@ -79,10 +79,11 @@ def construct_path(*subpath):
 def generate_index():
     """Use freelancer.ini to build an index of inis and dlls."""
     freelancer_ini = os.path.join(install, 'EXE/freelancer.ini')
+    parsed = ini.parse(freelancer_ini, fold_values=False)
 
-    root = ini.parse(freelancer_ini, 'freelancer', fold_values=False)[0]  # todo: also look at 'data path'
-    resources = ini.parse(freelancer_ini, 'resources')[0]['dll']
-    data = ini.parse(freelancer_ini, 'data', fold_values=False)[0]
+    root = parsed['freelancer'][0]  # todo: also look at 'data path'
+    resources = parsed['resources'][0]['dll']
+    data = parsed['data'][0]
     data.update(root)
 
     dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources, 1)})  # dll 0 is freelancer.exe itself
