@@ -16,14 +16,14 @@ format most used by mods as it facilitates editing.
 from typing import Union, List, Set, Dict, Any, Tuple
 from collections import defaultdict
 from functools import lru_cache
-import os
+import os.path
 import warnings
 
 from . import bini
 
 
-@lru_cache
-def parse(paths: Union[str, List[str]], fold_values=True) -> Dict[str, List[Dict[str, Any]]]:
+@lru_cache(64)
+def parse(paths: Union[str, Tuple[str]], fold_values=True) -> Dict[str, List[Dict[str, Any]]]:
     """Parse the Freelancer-style INI file(s) at `paths`.
 
     INIs are parsed to a dictionary of section names mapping to a list of dicts representing the entries of those
@@ -79,7 +79,7 @@ def parse(paths: Union[str, List[str]], fold_values=True) -> Dict[str, List[Dict
     return result
 
 
-def fetch(paths: Union[str, List[str]], target_section: str, target_keys: Set[str]) -> List[Dict[str, Any]]:
+def fetch(paths: Union[str, Tuple[str]], target_section: str, target_keys: Set[str]) -> List[Dict[str, Any]]:
     """Fetch only a specified section (`target_section`) and keys (`target_keys`) from the Freelancer-style INI file(s)
     at `paths`.
 

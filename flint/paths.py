@@ -8,13 +8,13 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 This module provides utilities for working with Freelancer's paths.
 """
 import os
-from typing import Dict, List
+from typing import Dict, Tuple
 
 from .formats import ini
 from .dynamic import cached
 
 install: str
-inis: Dict[str, List[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
+inis: Dict[str, Tuple[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
 dlls: Dict[int, str] = {}  # dll number to path
 
 
