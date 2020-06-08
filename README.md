@@ -290,8 +290,11 @@ Windows resource DLLs are used to store names and infocards. DLLs are a subset o
 Another of Digital Anvil's formats, UTF (Universal Tree Format), is used as a catch-all container for binary files (blobs), with the exception of audio files which use the WAV container. UTF files can have the file extensions `.3db` (icons and textures), `.txm` (effects and some textures) and `.cmp` (models).
 
 ## To be added
-- Comprehensive parsing of zones
+- Comprehensive classification of Zone types
 - Parsing of equipment
+- Reading `mbases.ini`
+- Reading `infocardmap.ini`
+- Interpreting RDL as opposed to using a crude lookup table
 - Route planning
 - Writer implementations for formats
 
