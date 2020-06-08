@@ -9,23 +9,27 @@ from setuptools import setup, find_packages
 
 setup(
     name='fl-flint',  # distribution name
-    version='0.2',
+    version='0.3',
+
     author='biqqles',
     author_email='biqqles@protonmail.com',
+    url='https://github.com/biqqles/flint',
+
     description='A parser for Freelancer and its formats',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/biqqles/flint',
+
     packages=find_packages() + ['flint.interactive'],
-    install_requires=open('requirements.txt').readlines(),
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Operating System :: OS Independent',
         'Topic :: Games/Entertainment',
-        'Intended Audience :: Developers'
+        'Intended Audience :: Developers',
         'Development Status :: 3 - Alpha'
     ],
+
+    install_requires=open('requirements.txt').readlines(),
     python_requires='>=3.6',
 )
 
