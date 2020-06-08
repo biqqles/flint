@@ -10,8 +10,9 @@ well as the logic that Freelancer uses to map those resources to
 internal IDs. Additionally it implements conversion from RDL (used
 for rich-text strings) to HTML.
 """
-from os import SEEK_CUR
 from typing import Dict
+from os import SEEK_CUR
+import xml.etree.ElementTree as xml
 
 import deconstruct as c
 
@@ -25,11 +26,7 @@ resource_table: Dict[int, Dict[int, str]] = {}
 
 @cached
 def lookup(resource_id: int):
-    """
-    Looks up the text associated with a strid in the resource dlls.
-    When a dll is first parsed, its path is replaced in self.dllDict by a dictionary of the form {strid: text}.
-    See parseDLL's docstring for more details.
-    """
+    """Looks up the text associated with a resource ID (string or HTML) in the resource dlls."""
     if resource_id is None:  # sometimes objects which should have infocards don't. Freelancer doesn't seem to care
         return ''
 
@@ -53,11 +50,19 @@ def lookup(resource_id: int):
 
 @cached
 def lookup_as_html(resource_id: int):
-    """Looks up the given resource_id, translates RDL to HTML and returns."""
+    """Looks up the given resource ID and translates RDL to HTML."""
     result = lookup(resource_id)
     for rdl, html in RDL_TO_HTML.items():
         result = result.replace(rdl, html)
     return result
+
+
+@cached
+def lookup_as_plain(resource_id: int):
+    """Looks up the given resource ID and strips out all RDL tags. Paragraph tags are replaced with newlines."""
+    rdl = lookup(resource_id).replace('<PARA/>', '\n').replace('</PARA>', '')
+    tree = xml.fromstring(rdl)
+    return xml.tostring(tree, encoding='unicode', method='text')
 
 
 def parse(path: str, external_strid_offset: int) -> Dict[int, str]:

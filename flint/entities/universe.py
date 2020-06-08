@@ -78,8 +78,9 @@ class Base(Entity):
     system: str
     _market: Dict
 
-    def infocard(self, plain=False) -> str:
-        return self.solar().infocard(plain)
+    def infocard(self, markup='html') -> str:
+        """The infocard of this base's solar (Base sections do not define ids_info)."""
+        return self.solar().infocard(markup)
 
     def system_(self) -> System:
         """The entity of the system this base resides in."""

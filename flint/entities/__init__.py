@@ -19,22 +19,23 @@ from ..formats import dll
 
 @dataclass(kwargs=True, frozen=True)
 class Entity:
-    """The base data class for any entity defined within Freelancer, distinguished by its nickname.
+    """
+    The base data class for any entity defined within Freelancer, distinguished by a nickname.
 
-    Attributes (fields) of subclasses should only be used for the "primitive" attributes that define an entity in the
-    inis. These should reproduce the names exactly as they appear in the inis to enable Entities to be automatically
-    initialised from said files. Fields with clear default values (e.g. navmapscale in universe.ini, which defaults to
-    1.0), dataclasses permitting (only fields at the end of the can have default values). Otherwise, all fields must be
-    provided.
+    Attributes (fields) of Entity classes represent entries defined in the INI file section type which this class
+    represents. This allows Entities to be automatically constructed from parsed INI files. Fields may have default
+    values (defaults are inferred from the input Freelancer expects rather than being defined in the INI files).
 
-    Any attributes not present in the game files should have names beginning with _ to denote their.
-    If you need to extend these classes to include non-standard fields (e.g. mods), you can take the output of ini.parse
-    use dataclasses.from_dict to dynamically define a dataclass and inherit from these classes to get their methods.
+    Methods represent derived fields. For example, the ids_name attribute stores the resource ID of an Entity's name as
+    defined in the INI. The name() method looks up this resource ID in the resource table and returns the string it
+    refers to.
 
-    Derived attributes are represented as methods (ideally these would be properties, but this allows them to be
-    distinguished from primitive attributes).
+    Attributes not present in the INIs but useful to be passed at construction time /can/ be defined, though this should
+    be kept to a minimum. These attributes must have names beginning with _ to denote their internal status.
 
-    All fields must be set, or have a default value, in which case that value will be used."""
+    If you want to extend these classes to cover non-standard fields (e.g. for an unsupported mod), you can use
+    dataclassy.create_dataclass to dynamically define a dataclass and then use these classes as mixins.
+    """
     nickname: str  # a unique string identifier for this entity
     ids_name: int  # resource id for name. note this is occasionally referred to as strid_name in the game files
     ids_info: int  # resource id for infocard
@@ -43,9 +44,16 @@ class Entity:
         """The display name of this entity."""
         return dll.lookup(self.ids_name)
 
-    def infocard(self, plain=False) -> str:
-        """The infocard for this entity, formatted in HTML unless `plain` is specified."""
-        lookup = dll.lookup if plain else dll.lookup_as_html
+    def infocard(self, markup='html') -> str:
+        """The infocard for this entity, formatted in the markup language (`rdl`, `html` or `plain`) specified."""
+        if markup == 'html':
+            lookup = dll.lookup_as_html
+        elif markup == 'plain':
+            lookup = dll.lookup_as_plain
+        elif markup == 'rdl':
+            lookup = dll.lookup
+        else:
+            raise ValueError
         return lookup(self.ids_info)
 
     def __hash__(self) -> int:

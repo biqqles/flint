@@ -8,7 +8,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from typing import Tuple, Optional, Union
 
 from . import Entity
-from .. import formats, maps
+from .. import maps
+from ..formats import dll
 
 
 class Solar(Entity):
@@ -73,10 +74,17 @@ class BaseSolar(Object):
         """The Faction entity that operates this base."""
         return routines.get_factions()[self.reputation]
 
-    def infocard(self, plain=False) -> str:
+    def infocard(self, markup='html') -> str:
         """Base infocards are actually in two parts, with ids_info referring to the specs of a base and ids_info + 1
         storing the actual description"""
-        lookup = formats.dll.lookup if plain else formats.dll.lookup_as_html
+        if markup == 'html':
+            lookup = dll.lookup_as_html
+        elif markup == 'plain':
+            lookup = dll.lookup_as_plain
+        elif markup == 'rdl':
+            lookup = dll.lookup
+        else:
+            raise ValueError
 
         specifications = lookup(self.ids_info)
         try:

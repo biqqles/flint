@@ -16,15 +16,15 @@ from ..formats import dll, utf
 
 
 class Good(Entity):
-    """A Good is anything that can be bought or sold. Commodities, equipment and ships are all examples of goods.
-    (ABSTRACT.)"""
+    """A Good is an abstract representation of something that can be bought or sold. Commodities, equipment and ships
+    all have goods."""
     item_icon: Optional[str]  # path to icon, relative to DATA
     price: int  # the default price for this good, pre market multiplier
     _market: Dict[bool, Tuple]
 
     def icon_path(self) -> str:
         """The absolute path to the .3db file containing this item's icon."""
-        return paths.construct_path('DATA', self.item_icon or 'EQUIPMENT/MODELS/COMMODITIES/NN_ICONS/blank.3db')
+        return paths.construct_path('DATA', self.item_icon or self.DEFAULT_ICON)
 
     def icon(self) -> bytes:
         """This good's icon in TGA format."""
@@ -37,6 +37,8 @@ class Good(Entity):
     def bought_at(self) -> Dict[str, int]:
         """A dict of bases that buy this good of the form {base_nickname: price}."""
         return dict(self._market[False])
+
+    DEFAULT_ICON = 'EQUIPMENT/MODELS/COMMODITIES/NN_ICONS/blank.3db'
 
 
 class Commodity(Good):
@@ -59,9 +61,16 @@ class Ship(Good):
     _hull: Dict[str, Any]
     _package: Dict[str, Any]
 
-    def infocard(self, plain=False) -> str:
+    def infocard(self, markup='html') -> str:
         """I have no idea why the order these are displayed in is not ascending, but anyway."""
-        lookup = dll.lookup if plain else dll.lookup
+        if markup == 'html':
+            lookup = dll.lookup_as_html
+        elif markup == 'plain':
+            lookup = dll.lookup_as_plain
+        elif markup == 'rdl':
+            lookup = dll.lookup
+        else:
+            raise ValueError
         return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info, self.ids_info2, self.ids_info3)))
 
     def type(self) -> str:

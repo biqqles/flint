@@ -78,7 +78,7 @@ Entity types are described in detail in the next section.
 |`ids_info`          |`int`             |Resource id for infocard                                    |
 |**Methods**         |                  |                                                            |
 |**`name()`**        |`str`             |The display name of this entity                             |
-|**`infocard(plain=False)`**|`str`      |The infocard for this entity, formatted in HTML unless `plain` is specified|
+|**`infocard(markup='html')`**|`str`    |The infocard for this entity, formatted in the markup language (`rdl`, `html` or `plain`) specified|
 
 An `Entity`'s nickname uniquely identifies it - this means it is hashable.
 
