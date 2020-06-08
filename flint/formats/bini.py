@@ -9,10 +9,10 @@ This file implements a reader for Freelancer's "BINI" (binary INI)
 format. Thanks to Bas Westerbaan for providing excellent
 documentation available here: <http://blog.w-nz.com/uploads/bini.pdf>.
 """
+from typing import Dict, List
 from collections import defaultdict
 from struct import unpack
-from os.path import getsize
-from typing import Dict, List
+from os.path import getsize, isfile
 
 VALUE_TYPES = {1: 'i', 2: 'f', 3: 'i'}  # maps a byte value type to a struct format string
 
@@ -98,3 +98,12 @@ def dump(path: str) -> str:
                 lines.extend(entries)
             lines.append('')  # add a blank line after each section
     return '\n'.join(lines)
+
+
+def is_bini(path: str) -> bool:
+    """Returns whether the (.ini) file at `path` is a BINI by checking its magic number."""
+    assert isfile(path)
+    with open(path, 'rb') as f:
+        data = f.read(4)
+    return data[:4] == b'BINI'
+

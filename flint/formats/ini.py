@@ -39,14 +39,12 @@ def parse(paths: Union[str, Tuple[str]], fold_values=True) -> Dict[str, List[Dic
 
     for path in paths:
         assert os.path.isfile(path)
-        with open(path, 'rb') as f:
-            data = f.read(4)
-            if data[:4] == b'BINI':
-                bini_data = bini.parse(path, fold_values)
-                return bini_data
-            f.seek(0)
-            data = f.read()
-        raw = data.decode('windows-1252').lower()
+        if bini.is_bini(path):
+            return bini.parse(path, fold_values)
+
+        with open(path, encoding='windows-1252') as f:
+            raw = f.read().lower()  # files are case insensitive
+
         raw = raw.replace(DELIMITER_COMMENT + SECTION_NAME_START, '')  # delete commented section markers
 
         sections = raw.split(SECTION_NAME_START)
