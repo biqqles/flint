@@ -13,6 +13,7 @@ from ..formats import dll
 from .. import paths
 from .. import routines
 from . import Entity, EntitySet
+from .solars import BaseSolar
 
 
 class System(Entity):
@@ -125,6 +126,12 @@ class Faction(Entity):
         """How this faction views other factions - its reputation sheet."""
         factions = routines.get_factions()
         return {factions[faction]: rep for rep, faction in self.rep if faction in factions}
+
+    def can_dock_at(self, base: BaseSolar) -> bool:
+        """Whether this faction can dock at the given base."""
+        return self.rep_sheet()[base.owner()] > self.NODOCK_REP
+
+    NODOCK_REP = -0.65
 
 
 from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing

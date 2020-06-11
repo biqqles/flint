@@ -139,6 +139,8 @@ For arbitrarily complex filtering, Python's excellent conditional generator expr
 |**`short_name()`**  |`str`                 |The short form of this faction's name                       |
 |**`bases()`**       |`EntitySet[BaseSolar]`|Bases owned by this faction                                 |
 |**`rep_sheet()`**   |`Dict[Faction, float]`|How this faction views other factions - its reputation sheet|
+|**`can_dock_at(base: BaseSolar)`**|`bool`  |Whether this faction can dock at the given base             |
+
 
 ---
 
