@@ -97,7 +97,11 @@ def parse_value(entry_value: str) -> Union[Any, Tuple]:
     """Parse an entry value (consisting either of a string, int or float or a tuple of such) using and return it as a
     Python object."""
     def auto_cast(v: str):
-        if not (v[:1] == '-' or v[:1].isdigit()):
+        if not (v[:1] == '-' or v[:1].isdigit()):  # if not a number
+            if v == 'true':
+                return True
+            if v == 'false':
+                return False
             return v
         try:
             return int(v)
