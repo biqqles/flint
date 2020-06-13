@@ -7,8 +7,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Hashable
-import collections.abc
+from typing import TypeVar, Iterable, Generic, Hashable, Type
+from collections.abc import Mapping
 import operator
 import pprint
 
@@ -66,8 +66,8 @@ class Entity:
 T = TypeVar('T')
 
 
-class EntitySet(collections.abc.Mapping, Generic[T]):
-    """A collection of entities, indexable by nickname."""
+class EntitySet(Mapping, Generic[T]):
+    """An immutable collection of entities, indexed by nickname."""
     def __init__(self, entities: Iterable[T]):
         self._map = {e.nickname: e for e in entities}
 
@@ -79,7 +79,7 @@ class EntitySet(collections.abc.Mapping, Generic[T]):
         return self._map[key]
 
     def __iter__(self):
-        """Iteration is over values"""
+        """Iteration is over values."""
         return iter(self._map.values())
 
     def __contains__(self, item):
@@ -87,25 +87,32 @@ class EntitySet(collections.abc.Mapping, Generic[T]):
         return isinstance(item, Hashable) and item in self._map
 
     def __len__(self):
+        """Length is the size of the map."""
         return len(self._map)
 
-    def __add__(self, other):
-        """Two EntitySets can be added together."""
+    def __add__(self, other) -> 'EntitySet[T]':
+        """Two EntitySets can be added together to create a new EntitySet."""
         if type(other) is not type(self):
             raise TypeError(f'Can only concatenate EntitySet (not {type(other)}) with EntitySet.')
         return EntitySet({e for e in self} | {e for e in other})
 
-    def __iadd__(self, other):
+    def __iadd__(self, other) -> 'EntitySet[T]':
         """An EntitySet can be extended."""
         return self + other
 
     def where(self, op=operator.eq, **kwargs) -> 'EntitySet[T]':
-        """Return elements of this EntitySet for which _all_ specified fields match their specified conditions.
-        (Like a very rudimentary ORM.)
-        E.g. `systems.where(name='New Berlin')`.
+        """Return a new EntitySet containing only Entities for which the given field matches the given condition.
+        Attributes and methods which do not take an argument can be used as fields.
+        Usage example: `systems.where(name='New Berlin')`.
+
+        The parameter `op` specifies the comparison operation to be performed on the field. It defaults to testing
+        for equality.
+
         For more complicated queries, use Python's own conditional generator expressions:
-        E.g. (s for s in systems if s.nickname.startswith('rh'))"""
-        return EntitySet(e for e in self if (all(op(getattr(e, f), c) for f, c in kwargs.items())))
+        E.g. EntitySet(s for s in systems if s.nickname.startswith('rh'))"""
+        assert len(kwargs) == 1
+        field, value = next(iter(kwargs.items()))
+        return EntitySet(e for e in self if op(vars(e).get(field) or getattr(e, field)(), value))
 
     @property
     def arb(self) -> T:
