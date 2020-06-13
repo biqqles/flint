@@ -100,6 +100,10 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
+    def of_type(self, type_: Type) -> 'EntitySet[T]':
+        """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
+        return EntitySet(filter(lambda e: isinstance(e, type_), self))
+
     def where(self, op=operator.eq, **kwargs) -> 'EntitySet[T]':
         """Return a new EntitySet containing only Entities for which the given field matches the given condition.
         Attributes and methods which do not take an argument can be used as fields.

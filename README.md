@@ -82,6 +82,12 @@ Entity types are described in detail in the next section.
 
 An `Entity`'s nickname uniquely identifies it - this means it is hashable.
 
+Attributes (fields) of Entity classes represent entries defined in the INI file section type which this class represents. This allows Entities to be automatically constructed from parsed INI files. Fields may have default values (defaults are inferred from the input Freelancer expects rather than being defined in the INI files).
+
+Methods represent derived fields. For example, the ids_name attribute stores the resource ID of an Entity's name as defined in the INI. The name() method looks up this resource ID in the resource table and returns the string it refers to.
+
+If you want to extend these classes to cover non-standard fields (e.g. for an unsupported mod), you can use dataclassy.create_dataclass to dynamically define a dataclass and then use these classes as mixins.
+
 An `Entity` marked as Abstract means that no entities in the game are directly classified as it - in other words, it is never returned by flint but can be used for typing and inheritance.
 
 As you would expect, all the usual rules of object inheritance apply, i.e. inherited classes retain all their previous methods and attributes, so `System(Entity)` listed below has all the fields and methods of `Entity` above. Similarly, `PlanetaryBase(BaseSolar, Planet)` has all the attributes and methods of `BaseSolar` _and_ `Planet`.
@@ -89,7 +95,13 @@ As you would expect, all the usual rules of object inheritance apply, i.e. inher
 #### EntitySet
 An `EntitySet` is a set of entities of a particular type. An `EntitySet` is constructed from an iterable producing `Entity` objects, and it stores these in a hash table based on the nicknames of these entities. An `EntitySet` is therefore indexable by nickname, for example `fl.get_systems()['br01']` returns the `Entity` for New London.
 
-For arbitrarily complex filtering, Python's excellent conditional generator expressions are recommended, for example `EntitySet(s for s in fl.get_systems() if s.nickname.startswith('br'))` returns an `EntitySet` containing all the systems in the house of Bretonia. `EntitySet`s are nominally immutable but two `EntitySet`s can be merged to create a new `EntitySet` using `+` or `+=`.
+You can filter an `EntitySet` in three ways:
+
+- The `of_type(type_: Type)` method which returns a new, homogeneous EntitySet containing only entities which are instances of the specified type.
+- The `where` method which allows entities to be conveniently filtered based on their fields (meaning attributes and methods which take no arguments). For example, `fl.get_systems().where(name='New Berlin')` returns an `EntitySet` containing the one `Entity` it matches - the system of New Berlin.
+- For arbitrarily complex filtering, Python's excellent conditional generator expressions are recommended. For example, `EntitySet(s for s in fl.get_systems() if s.nickname.startswith('br'))` returns an `EntitySet` containing all the systems in the house of Bretonia.
+
+`EntitySet`s are immutable collections but two can be merged to create a new `EntitySet` using `+` or `+=`.
 
 ---
 [**Universe**](flint/entities/universe.py)
