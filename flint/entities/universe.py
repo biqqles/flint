@@ -31,27 +31,27 @@ class System(Entity):
 
     def zones(self) -> 'EntitySet[Zone]':
         """All zones in this system."""
-        return EntitySet(c for c in self.contents() if isinstance(c, Zone))
+        return self.contents().of_type(Zone)
 
     def objects(self) -> 'EntitySet[Object]':
         """All objects in this system."""
-        return EntitySet(c for c in self.contents() if isinstance(c, Object))
+        return self.contents().of_type(Object)
 
     def bases(self) -> 'EntitySet[BaseSolar]':
         """All bases in this system."""
-        return EntitySet(c for c in self.objects() if isinstance(c, BaseSolar))
+        return self.contents().of_type(BaseSolar)
 
     def planets(self) -> 'EntitySet[Planet]':
         """All planets in this system."""
-        return EntitySet(c for c in self.objects() if isinstance(c, Planet))
+        return self.contents().of_type(Planet)
 
     def stars(self) -> 'EntitySet[Star]':
         """All stars in this system."""
-        return EntitySet(c for c in self.objects() if isinstance(c, Star))
+        return self.contents().of_type(Star)
 
     def connections(self) -> 'Dict[Jump, System]':
         """The connections this system has to other systems."""
-        return {c: c.destination_system() for c in self.objects() if isinstance(c, Jump)}
+        return {c: c.destination_system() for c in self.contents().of_type(Jump)}
 
     def lanes(self) -> 'List[List[TradeLaneRing]]':
         """Return a list of lists of rings, where each nested list represents a complete trade lane and contains each
