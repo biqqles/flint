@@ -24,7 +24,7 @@ from .maps import PosVector, RotVector
 @cached
 def get_systems() -> EntitySet[System]:
     """All systems defined in the game files."""
-    systems = ini.parse(paths.inis['universe'])['system']
+    systems = ini.sections(paths.inis['universe'])['system']
 
     return EntitySet(System(**s, ids_name=s.pop('strid_name')) for s in systems if 'file' in s)
 
@@ -32,7 +32,7 @@ def get_systems() -> EntitySet[System]:
 @cached
 def get_bases() -> EntitySet[Base]:
     """All bases defined in the game files."""
-    bases = ini.parse(paths.inis['universe'])['base']
+    bases = ini.sections(paths.inis['universe'])['base']
 
     return EntitySet(Base(**b, ids_name=b.pop('strid_name'), ids_info=None, _market=_get_markets()[b['nickname']])
                      for b in bases)
@@ -42,7 +42,7 @@ def get_bases() -> EntitySet[Base]:
 def get_commodities() -> EntitySet[Commodity]:
     """All commodities defined in the game files."""
     path = paths.construct_path('DATA/EQUIPMENT/select_equip.ini')
-    commodities = ini.parse(path)['commodity']
+    commodities = ini.sections(path)['commodity']
 
     result = []
 
@@ -57,14 +57,14 @@ def get_commodities() -> EntitySet[Commodity]:
 @cached
 def get_factions() -> EntitySet[Faction]:
     """All groups (i.e. factions) defined in the game files."""
-    groups = ini.parse(paths.inis['initial_world'])['group']
+    groups = ini.sections(paths.inis['initial_world'])['group']
     return EntitySet(Faction(**g) for g in groups)
 
 
 @cached
 def get_ships() -> EntitySet[Ship]:
     """All ships defined in the game files."""
-    stats = ini.parse(paths.inis['ships'])['ship']
+    stats = ini.sections(paths.inis['ships'])['ship']
     result: List[Ship] = []
 
     for s in stats:
@@ -86,7 +86,7 @@ def get_ships() -> EntitySet[Ship]:
 def get_system_contents(system: System) -> EntitySet[Solar]:
     """All solars (objects and zones) in a given system."""
     result = []
-    contents = ini.parse(system.definition_path())
+    contents = ini.sections(system.definition_path())
 
     # categorise objects based on their keys
     def modify_solar(solar: Dict):
@@ -128,7 +128,7 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
 def _get_goods() -> Dict[str, Dict]:
     # This is an internal method. A good is anything that can be bought or sold.
     # get_commodities, get_ships and get_equipment link goods up to objects
-    goods = ini.parse(paths.inis['goods'])['good']  # todo: equipment too
+    goods = ini.sections(paths.inis['goods'])['good']  # todo: equipment too
 
     result = {}
     for g in goods:
@@ -146,7 +146,7 @@ def _get_goods() -> Dict[str, Dict]:
 @cached
 def _get_markets() -> Dict[str, Dict[bool, List[Tuple[str, int]]]]:
     """Result is of the form base/good nickname -> {sold -> (good/base nickname, price at base}}"""
-    market = ini.parse(paths.inis['markets'], fold_values=False)['basegood']
+    market = ini.sections(paths.inis['markets'], fold_values=False)['basegood']
     goods = _get_goods()
     result = defaultdict(lambda: {True: [], False: []})
     for b in market:
