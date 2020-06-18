@@ -16,7 +16,7 @@ import xml.etree.ElementTree as xml
 
 import deconstruct as c
 
-from ..dynamic import cached
+from .. import cached
 from .. import paths
 from . import WinStruct
 

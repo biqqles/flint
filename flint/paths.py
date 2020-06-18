@@ -11,7 +11,7 @@ import os
 from typing import Dict, Tuple
 
 from .formats import ini
-from .dynamic import cached
+from . import cached
 
 install: str
 inis: Dict[str, Tuple[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
@@ -79,7 +79,7 @@ def construct_path(*subpath):
 def generate_index():
     """Use freelancer.ini to build an index of inis and dlls."""
     freelancer_ini = os.path.join(install, 'EXE/freelancer.ini')
-    parsed = ini.parse(freelancer_ini, fold_values=False)
+    parsed = ini.sections(freelancer_ini, fold_values=False)
 
     root = parsed['freelancer'][0]  # todo: also look at 'data path'
     resources = parsed['resources'][0]['dll']

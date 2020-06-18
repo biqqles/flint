@@ -23,7 +23,7 @@ from . import bini
 
 
 @lru_cache(64)
-def parse(paths: Union[str, Tuple[str]], fold_values=True) -> Dict[str, List[Dict[str, Any]]]:
+def sections(paths: Union[str, Tuple[str]], fold_values=True) -> Dict[str, List[Dict[str, Any]]]:
     """Parse the Freelancer-style INI file(s) at `paths`.
 
     INIs are parsed to a dictionary of section names mapping to a list of dicts representing the entries of those
@@ -83,7 +83,7 @@ def fetch(paths: Union[str, Tuple[str]], target_section: str, target_keys: Set[s
 
     Sections and keys which do not match the targets are dropped. The result is a list of dictionaries of matching keys
     and their values for each section instance."""
-    parsed = parse(paths)
+    parsed = sections(paths)
     result = []
     for section_name, sections in parsed.items():
         if section_name == target_section:

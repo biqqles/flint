@@ -12,8 +12,7 @@ from collections import namedtuple
 import math
 
 from . import routines
-from .dynamic import cached
-
+from . import cached
 
 PosVector = namedtuple('pos', 'x y z')
 RotVector = namedtuple('rot', 'x y z')
