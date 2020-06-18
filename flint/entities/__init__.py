@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Hashable, Type
+from typing import TypeVar, Iterable, Generic, Hashable, Type, cast
 from collections.abc import Mapping
 import operator
 import pprint
@@ -100,7 +100,7 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
-    def of_type(self, type_: Type) -> 'EntitySet[T]':
+    def of_type(self, type_: Type[T]) -> 'EntitySet[T]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
 
@@ -126,6 +126,8 @@ class EntitySet(Mapping, Generic[T]):
 
 
 # exported types
-from .goods import Ship, Commodity
+from .equipment import Equipment, Commodity, Armor, ShieldGenerator, Thruster, Engine, Gun
+from .goods import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
+from .ships import Ship
 from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase, TradeLaneRing, Wreck, Zone
 from .universe import Base, System, Faction

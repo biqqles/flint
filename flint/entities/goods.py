@@ -4,23 +4,21 @@ Copyright (C) 2016, 2017, 2020 biqqles.
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-# todo: Equipment.
 """
-from typing import Dict, List, Any, Tuple, Optional
-import math
+from typing import Dict, List, Tuple
 
 from . import Entity
 from .. import paths
-from ..formats import dll, utf
+from ..formats import utf
 
 
 class Good(Entity):
-    """A Good is an abstract representation of something that can be bought or sold. Commodities, equipment and ships
-    all have goods."""
-    item_icon: Optional[str]  # path to icon, relative to DATA
+    """A Good is the physical (transferable) representation of something that can be bought or sold. A good maps the
+    abstract definition of commodities, equipment and ships to something that is tradeable."""
+    ids_info = None
+    ids_name = None
+    item_icon = None  # path to icon, relative to DATA
     price: int  # the default price for this good, pre market multiplier
-    _market: Dict[bool, Tuple]
 
     def icon_path(self) -> str:
         """The absolute path to the .3db file containing this item's icon."""
@@ -30,80 +28,69 @@ class Good(Entity):
         """This good's icon in TGA format."""
         return utf.extract(self.icon_path(), 'MIP0')
 
-    def sold_at(self) -> Dict[str, int]:
-        """A dict of bases that sell this good of the form {base_nickname: price}."""
-        return dict(self._market[True])
+    def market(self) -> Dict[bool, Dict['Base', int]]:
+        """The market for this Good, i.e. the Bases it is bought and sold on and their prices."""
+        return routines.get_markets()[self]
 
-    def bought_at(self) -> Dict[str, int]:
+    def sold_at(self) -> Dict['Base', int]:
+        """A dict of bases that sell this good of the form {base_nickname: price}."""
+        return self.market()[True]
+
+    def bought_at(self) -> Dict['Base', int]:
         """A dict of bases that buy this good of the form {base_nickname: price}."""
-        return dict(self._market[False])
+        return {**self.market()[False], **self.sold_at()}
+
+    def price_at(self, base: 'Base') -> int:
+        return self.bought_at[base]
 
     DEFAULT_ICON = 'EQUIPMENT/MODELS/COMMODITIES/NN_ICONS/blank.3db'
 
 
-class Commodity(Good):
-    """A Commodity is the representation of a good in tradeable/transportable form."""
-    volume: float  # volume of one unit in ship's cargo bay
+class EquipmentGood(Good):
+    """The good of a piece of equipment."""
+    equipment: str  # nickname of the good this equipment represents.
+    combinable: bool
+
+    def equipment_(self):
+        """The Equipment entity this good refers to."""
+        return routines.get_equipment()[self.equipment]
 
 
-class Ship(Good):
-    """A star ship with a cargo bay and possibly hardpoints for weapons."""
-    ids_info1: int
-    ids_info2: int
-    ids_info3: int
-    ship_class: int
-    hit_pts: int
-    hold_size: int
-    nanobot_limit: int
-    shield_battery_limit: int
-    steering_torque: Tuple[float, float, float]
-    angular_drag: Tuple[float, float, float]
-    _hull: Dict[str, Any]
-    _package: Dict[str, Any]
+class CommodityGood(EquipmentGood):
+    """The good of a commodity. This is the place where the distinction between equipment and commodities is made."""
+    good_sell_price: float
+    bad_buy_price: float
+    bad_sell_price: float
+    good_buy_price: float
+    shop_archetype: str
 
-    def infocard(self, markup='html') -> str:
-        """I have no idea why the order these are displayed in is not ascending, but anyway."""
-        if markup == 'html':
-            lookup = dll.lookup_as_html
-        elif markup == 'plain':
-            lookup = dll.lookup_as_plain
-        elif markup == 'rdl':
-            lookup = dll.lookup
-        else:
-            raise ValueError
-        return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info, self.ids_info2, self.ids_info3)))
+    def commodity(self) -> 'Commodity':
+        """The Commodity entity this good refers to."""
+        return self.equipment_()
 
-    def type(self) -> str:
-        """The name of the type (class) of this ship."""
-        return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
-    def turn_rate(self) -> float:
-        """Turn rate in degrees per second."""
-        avg = lambda i: sum(i) / len(i)
-        return math.degrees(avg(self.steering_torque) / (avg(self.angular_drag) or math.inf))
+class ShipHull(Good):
+    """The hull of a ship, meaning a ship with no equipment mounted."""
+    ship: str  # nickname of a Ship
 
-    def hardpoints(self) -> List[str]:
-        """A list of this ship's hardpoints todo out of the box"""
-        return self._package['addon']
+    def ship_(self) -> 'Ship':
+        return routines.get_goods()[self.ship]
 
-    TYPE_ID_TO_NAME = {0: 'Light Fighter',
-                       1: 'Heavy Fighter',
-                       2: 'Freighter',
-                       # Discovery:
-                       3: 'Very Heavy Fighter',
-                       4: 'Super Heavy Fighter',
-                       5: 'Bomber',
-                       6: 'Transport',  # more specifically;
-                       7: 'Transport',  # trains
-                       8: 'Transport',  # battle-transports
-                       9: 'Transport',
-                       10: 'Transport',  # liners.
-                       11: 'Gunboat',  # gunships
-                       12: 'Gunboat',
-                       13: 'Cruiser',  # destroyers
-                       14: 'Cruiser',
-                       15: 'Cruiser',  # battlecruisers
-                       16: 'Battleship',
-                       17: 'Battleship',  # carriers
-                       18: 'Battleship',  # flagships
-                       19: 'Freighter'}  # repair ships
+
+class ShipPackage(Good):
+    """A ship "package" is the form a ship is buyable in. As a kind of "composite" good, it does not have an inherent
+    `price` attribute, unlike other goods. Its cost is the sum of the hull and all "addons", which are the equipment
+    mounted on the ship when purchased."""
+    price = 0
+    hull: str  # nickname of a ShipHull
+    addon: List[Tuple[str, str, int]]  # tuple of the form (equipment nickname, hardpoint nickname, ?)
+
+    def hull_(self) -> ShipHull:
+        """The ShipHull entity of this package's hull."""
+        return routines.get_goods()[self.hull]
+
+    def cost(self) -> int:
+        pass
+
+
+from .. import routines

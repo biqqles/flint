@@ -76,8 +76,8 @@ class System(Entity):
 
 class Base(Entity):
     """A space station or colonised planet, operated by a Faction."""
+    ids_info = None  # infocard is defined by the base's solar
     system: str
-    _market: Dict
 
     def infocard(self, markup='html') -> str:
         """The infocard of this base's solar (Base sections do not define ids_info)."""
@@ -99,13 +99,16 @@ class Base(Entity):
         """The sector of this base's solar in its system."""
         return self.solar().sector()
 
-    def sells(self) -> Dict[str, int]:
-        """The goods this base sells, of the form {good -> price}."""
-        return dict(self._market[True])
+    def market(self):
+        return routines.get_markets()[self]
 
-    def buys(self) -> Dict[str, int]:
+    def sells(self) -> Dict['Good', int]:
+        """The goods this base sells, of the form {good -> price}."""
+        return self._market()[True]
+
+    def buys(self) -> Dict['Good', int]:
         """The goods this base buys, of the form {good -> price}"""
-        return dict(self._market[False])
+        return self._market()[False]
 
 
 class Faction(Entity):
