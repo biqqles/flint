@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple
 from collections import defaultdict
 
 from . import paths
-from .dynamic import cached
+from . import cached
 from .formats import ini
 from .entities import EntitySet
 from .entities import Commodity, Ship

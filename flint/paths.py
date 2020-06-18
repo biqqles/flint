@@ -11,7 +11,7 @@ import os
 from typing import Dict, Tuple
 
 from .formats import ini
-from .dynamic import cached
+from . import cached
 
 install: str
 inis: Dict[str, Tuple[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
