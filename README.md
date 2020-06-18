@@ -11,24 +11,24 @@ Taken together, this yields a simple yet powerful API that can be used to explor
 flint specifically supports vanilla Freelancer and [Discovery Freelancer](https://discoverygc.com), but in principle should work with any mod.
 
 ## Installation
-flint is on PyPI:
+Install the latest stable version from [PyPI](https://pypi.org/project/fl-flint) with pip:
 
 ```
-python -m pip install fl-flint
+pip install fl-flint
 ```
 
-Alternatively you can install straight from this repository:
+Or install the latest development version straight from this repository:
 
 ```sh
-python -m pip install https://github.com/biqqles/flint/archive/master.zip
+pip install https://github.com/biqqles/flint/archive/master.zip -U
 ```
 
 Built wheels are also available under [Releases](https://github.com/biqqles/flint/releases), as is a changelog.
 
-flint requires Python >= 3.6 because it uses the `dataclasses` module which was added in that release.
+flint requires Python >= 3.6.
 
 ## Interactive shell
-flint incorporates an interactive mode that can be used for testing or exploration. It provides a Python interpreter where flint is imported `as fl` and ready to use. To use it, run `python -m flint.interactive <path_to_freelancer>`. This mode will be used in the following examples.
+flint incorporates an interactive mode that can be used for testing or exploration. It provides a Python interpreter where flint is imported `as fl` and ready to use. To use it, run `python -m flint <path_to_freelancer>`. This mode will be used in the following examples.
 
 ## API description
 The API is unstable until v1.0. Minor details may change.

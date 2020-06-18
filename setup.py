@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fl-flint',  # distribution name
-    version='0.3',
+    version='0.4',
 
     author='biqqles',
     author_email='biqqles@protonmail.com',
@@ -19,7 +19,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
 
-    packages=find_packages() + ['flint.interactive'],
+    packages=find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
