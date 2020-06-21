@@ -22,7 +22,7 @@ def cached(function):
     def wrapped(*args):
         function_cache = central_cache[function]
         if args in function_cache:
-            return central_cache[function]
+            return function_cache[args]
         result = function_cache[args] = function(*args)
         return result
     return wrapped
