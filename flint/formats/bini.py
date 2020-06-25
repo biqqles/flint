@@ -17,10 +17,10 @@ from os.path import getsize, isfile
 VALUE_TYPES = {1: 'i', 2: 'f', 3: 'i'}  # maps a byte value type to a struct format string
 
 
-def parse(path: str, fold_values=True, lower=True) -> Dict[str, List[Dict[str, List]]]:
+def parse_file(path: str, fold_values=True, lower=True):
     """Read the BINI file at `path` and produce an output of the form
     {section_name -> [{entry_name -> entry_values}]}"""
-    result = defaultdict(list)
+    result = []
     string_table = {}
     file_size = getsize(path)
 
@@ -46,7 +46,7 @@ def parse(path: str, fold_values=True, lower=True) -> Dict[str, List[Dict[str, L
             section_name_ptr, entry_count = unpack('hh', f.read(4))
             section_name = string_table[section_name_ptr]
 
-            section_entries = defaultdict(list)
+            section_entries = []
             for e in range(entry_count):
                 # read entry
                 entry_name_ptr, value_count = unpack('hb', f.read(3))
@@ -71,28 +71,22 @@ def parse(path: str, fold_values=True, lower=True) -> Dict[str, List[Dict[str, L
                 else:
                     continue
 
-                if not fold_values or entry_name in section_entries:
-                    if isinstance(section_entries[entry_name], list):
-                        section_entries[entry_name].append(entry_value)
-                    else:
-                        section_entries[entry_name] = [section_entries[entry_name], entry_value]
-                else:
-                    section_entries[entry_name] = entry_value
-            result[section_name].append(section_entries)
+                section_entries.append((entry_name, entry_value))
+            result.append((section_name, section_entries))
 
-    return result
+    return tuple(result)
 
 
 def dump(path: str) -> str:
     """Dump the BINI file at `path` to an INI-formatted string."""
-    bini = parse(path, fold_values=False)
+    bini = parse_file(path, fold_values=False)
 
     lines = []
-    for section_name, sections in bini.items():
+    for section_name, sections in bini:
         for entry in sections:
             lines.append(f'[{section_name}]')
             # convert the entries in this section to strings and add to output
-            for key, values in entry.items():
+            for key, values in entry:
                 # form key value pairs for each entry value. Expand tuples to remove quotes and brackets
                 entries = [f'{key} = {", ".join(map(str, v)) if isinstance(v, tuple) else v}' for v in values]
                 lines.extend(entries)
@@ -106,4 +100,3 @@ def is_bini(path: str) -> bool:
     with open(path, 'rb') as f:
         data = f.read(4)
     return data[:4] == b'BINI'
-
