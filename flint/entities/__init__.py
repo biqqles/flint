@@ -84,7 +84,7 @@ class EntitySet(Mapping, Generic[T]):
 
     def __contains__(self, item):
         """Membership checking is as per hash table."""
-        return isinstance(item, Hashable) and item in self._map
+        return isinstance(item, Hashable) and item in self._map  # todo look at why this calls _eq_
 
     def __len__(self):
         """Length is the size of the map."""
@@ -126,8 +126,8 @@ class EntitySet(Mapping, Generic[T]):
 
 
 # exported types
-from .equipment import Equipment, Commodity, Armor, ShieldGenerator, Thruster, Engine, Gun
-from .goods import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
-from .ships import Ship
-from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase, TradeLaneRing, Wreck, Zone
-from .universe import Base, System, Faction
+from .equipment import *
+from .goods import *
+from .ships import *
+from .solars import *
+from .universe import *

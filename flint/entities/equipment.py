@@ -4,6 +4,15 @@ Copyright (C) 2016, 2017, 2020 biqqles.
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+This file defines entities for equipment. 'Equipment' includes anything
+which can be mounted on a ship or carried in its hold.
+
+There are also several non-entity section types that appear in equipment
+files. These include Lod, TradeLane, InternalFX, AttachedFX, Explosion,
+Light, Motor, LootCrate, Munition and Shield. Currently these are excluded
+as they do not exactly fit flint's entity model, and partly for the sake
+of simplicity in the first incarnation of equipment parsing.
 """
 from typing import Dict
 
@@ -13,7 +22,9 @@ from .. import routines
 
 
 class Equipment(Entity):
-    # volume: float  # volume of one unit in ship's cargo bay
+    """Something which can be mounted on a ship or carried in its hold."""
+    lootable: bool = False
+    mass: int
 
     def icon(self) -> bytes:
         """This equipment's icon in TGA format."""
@@ -28,6 +39,106 @@ class Equipment(Entity):
 
     def price(self):
         return self.good().price
+
+
+class Mountable(Equipment):
+    """Abstract class for a piece of equipment that is mountable."""
+    volume: int = 0  # volume of one unit in ship's cargo bay
+
+
+class External(Mountable):
+    """Abstract class for a piece of mountable equipment that is externally mounted, and therefore typically
+    destructible."""
+    hit_pts: int
+
+
+# equipment typically defined in weapon_equip.ini
+class Weapon(External):
+    """Abstract class for a piece of external equipment that is a weapon."""
+
+
+class Gun(Weapon):
+    """A gun that goes 'pew'. Not much to be said."""
+    power_usage: float
+    muzzle_velocity: int
+    refire_delay: float
+
+
+class Mine(Equipment):
+    """A mine that can be dropped into space."""
+
+
+class MineDropper(Weapon):
+    """A mine that can be dropped into space."""
+
+
+class CloakingDevice(Weapon):
+    """A cloaking device. Used in cutscenes in the campaign as well as on servers with cloaking devices enabled through
+    FLHook"""
+
+
+# equipment typically defined in st_equip.ini
+class Thruster(External):
+    """A thruster that provides supplementary power and velocity to the main engine."""
+    power_usage: float
+
+
+class ShieldGenerator(External):
+    """A piece of equipment that generates a shield bubble around a ship which absorbs damage from weapon fire."""
+    power_usage: float
+    shield_type: str
+    max_capacity: float
+    explosion_resistance: float
+
+
+# equipment typically defined in misc_equip.ini
+class Power(Mountable):
+    """A ship's power plant."""
+    capacity: int
+    charge_rate: int
+
+
+class Tractor(Mountable):
+    """A tractor beam generator"""
+    max_length: int  # range of beam in M
+
+
+class Scanner(Mountable):
+    """A scanner, akin to a radar transmitter/receiver."""
+    range: int  # maximum contact acquisition range in M
+    cargo_scan_range: int  # maximum cargo scan range in M
+
+
+class CounterMeasure(Equipment):
+    """A countermeasure that can be deployed against seeking missiles."""
+    lifetime: float
+
+
+class CounterMeasureDropper(Weapon):
+    """A countermeasure dispenser."""
+
+
+class RepairKit(Equipment):
+    """A nanobot that can be used to repair hull damage."""
+
+
+class ShieldBattery(Equipment):
+    """A shield battery, used to recharge shields instantaneously."""
+
+
+# equipment typically defined in engine_equip.ini
+class Engine(Equipment):
+    """A reaction engine that must be mounted to a ship to provide propulsion."""
+
+
+# equipment typically defined in select_equip.ini
+class Armor(Mountable):
+    """An armour upgrade."""
+    hit_pts_scale: float
+
+
+class CargoPod(Mountable):
+    """A cargo pod. These appear to be entirely cosmetic in the final game."""
 
 
 class Commodity(Equipment):
@@ -45,54 +156,3 @@ class Commodity(Equipment):
     def bought_at(self) -> Dict['Base', int]:
         """A dict of bases that sell this good of the form {base_nickname: price}. All bases buy equipment."""
         return self.good().bought_at()
-
-
-class Mountable(Equipment):
-    mass: int
-
-
-class ExternalMountable(Mountable):
-    hit_pts: int
-
-
-class ShieldGenerator(Mountable):
-    pass
-
-
-class Armor(Mountable):
-    """An armour upgrade."""
-    hit_pts_scale: float
-
-
-class Power(Mountable):
-    capacity: int
-    charge_rate: int
-    thrust_capacity: int
-    thrust_charge_rate: int
-
-
-class Gun(Equipment):
-    hit_pts: int
-    mass: int
-    power_usage: int
-    muzzle_velocity: int
-
-
-class Engine(Equipment):
-    pass
-
-
-class Thruster(Mountable):  # parent_impulse, child_impulse, volume, power_usage
-    pass
-
-
-class Munition(Equipment):
-    pass
-
-
-class RepairKit(Equipment):
-    """A nano bot."""
-
-
-class ShieldBattery(Equipment):
-    """A shield battery."""
