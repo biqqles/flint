@@ -7,6 +7,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Dict, List, Tuple
 
+from dataclassy import Internal
+
 from . import Entity
 from .. import paths
 from ..formats import utf
@@ -41,7 +43,7 @@ class Good(Entity):
         return {**self.market()[False], **self.sold_at()}
 
     def price_at(self, base: 'Base') -> int:
-        return self.bought_at[base]
+        return self.bought_at()[base]
 
     DEFAULT_ICON = 'EQUIPMENT/MODELS/COMMODITIES/NN_ICONS/blank.3db'
 
@@ -51,9 +53,9 @@ class EquipmentGood(Good):
     equipment: str  # nickname of the good this equipment represents.
     combinable: bool
 
-    def equipment_(self):
+    def equipment_(self) -> 'Equipment':
         """The Equipment entity this good refers to."""
-        return routines.get_equipment()[self.equipment]
+        return routines.get_equipment().get(self.equipment)
 
 
 class CommodityGood(EquipmentGood):
@@ -74,7 +76,8 @@ class ShipHull(Good):
     ship: str  # nickname of a Ship
 
     def ship_(self) -> 'Ship':
-        return routines.get_goods()[self.ship]
+        """The Ship that uses this hull."""
+        return routines.get_ships().get(self.ship)
 
 
 class ShipPackage(Good):
@@ -83,14 +86,21 @@ class ShipPackage(Good):
     mounted on the ship when purchased."""
     price = 0
     hull: str  # nickname of a ShipHull
-    addon: List[Tuple[str, str, int]]  # tuple of the form (equipment nickname, hardpoint nickname, ?)
+    addon: Internal[List[Tuple[str, str, int]]]  # tuple of the form (equipment nickname, hardpoint nickname, ?)
 
     def hull_(self) -> ShipHull:
         """The ShipHull entity of this package's hull."""
         return routines.get_goods()[self.hull]
 
+    def ship(self) -> 'Ship':
+        """The Ship this package represents."""
+        return self.hull_().ship_()
+
     def cost(self) -> int:
-        pass
+        """The cost of this ship package when bought. Note that this is distinct from Good's _price_, which ShipPackage
+        lacks. Instead a ship's cost at the vendor is the sum of the prices of its hull and default equipment
+        ("addons")."""
+        return self.hull_().price  # todo: include cost of addons
 
 
 from .. import routines
