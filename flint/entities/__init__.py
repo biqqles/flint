@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Hashable, Type, cast
+from typing import TypeVar, Iterable, Generic, Type
 from collections.abc import Mapping
 import operator
 import pprint
@@ -68,14 +68,16 @@ T = TypeVar('T')
 
 class EntitySet(Mapping, Generic[T]):
     """An immutable collection of entities, indexed by nickname."""
+    pprint.sorted = lambda v, key=None: v  # override pprint's sorted implementation to print in insertion order
+
     def __init__(self, entities: Iterable[T]):
         self._map = {e.nickname: e for e in entities}
 
     def __repr__(self):
-        pprint.sorted = lambda v, key=None: v  # override pprint's sorted implementation to print in insertion order
-        return pprint.pformat(self._map)
+        return f'EntitySet({pprint.pformat(self._map)})'
 
     def __getitem__(self, key: str) -> T:
+        assert type(key) is str
         return self._map[key]
 
     def __iter__(self):
@@ -84,7 +86,7 @@ class EntitySet(Mapping, Generic[T]):
 
     def __contains__(self, item):
         """Membership checking is as per hash table."""
-        return isinstance(item, Hashable) and item in self._map  # todo look at why this calls _eq_
+        return type(item) is str and item in self._map
 
     def __len__(self):
         """Length is the size of the map."""
