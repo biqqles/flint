@@ -16,7 +16,7 @@ from .. import routines
 
 
 class Ship(Entity):
-    """A star ship with a cargo bay and possibly hardpoints for weapons."""
+    """A starship with a cargo bay and possibly hardpoints for weapons."""
     ids_info1: int
     ids_info2: int
     ids_info3: int
@@ -28,19 +28,23 @@ class Ship(Entity):
     steering_torque: Tuple[float, float, float]
     angular_drag: Tuple[float, float, float]
 
-    def hull(self):
+    def hull(self) -> ShipHull:
+        """This ship's hull entity."""
         return routines.get_goods().of_type(ShipHull).where(ship=self.nickname).first
 
-    def package(self):
+    def package(self) -> ShipPackage:
+        """This ship's package entity."""
         return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).first
 
-    def price(self):
+    def price(self) -> int:
+        """The price of this ship's hull."""
         try:
             return self.hull().price
         except AttributeError:
             return 0
 
-    def icon(self):
+    def icon(self) -> bytes:
+        """This ship's icon."""
         return self.hull().icon()
 
     def infocard(self, markup='html') -> str:
@@ -65,7 +69,7 @@ class Ship(Entity):
 
     def hardpoints(self) -> List[str]:
         """A list of this ship's hardpoints todo out of the box"""
-        return self._package['addon']
+        return self.package().addon
 
     TYPE_ID_TO_NAME = {0: 'Light Fighter',
                        1: 'Heavy Fighter',
