@@ -14,6 +14,9 @@ from .. import paths
 from .. import routines
 from . import Entity, EntitySet
 from .solars import BaseSolar
+from .equipment import Equipment, Commodity
+from .ships import Ship
+from .goods import EquipmentGood, CommodityGood, ShipPackage
 
 
 class System(Entity):
@@ -104,11 +107,27 @@ class Base(Entity):
 
     def sells(self) -> Dict['Good', int]:
         """The goods this base sells, of the form {good -> price}."""
-        return self._market()[True]
+        return self.market()[True]
 
     def buys(self) -> Dict['Good', int]:
         """The goods this base buys, of the form {good -> price}"""
-        return self._market()[False]
+        return self.market()[False]
+
+    def sells_commodities(self) -> Dict[Commodity, int]:
+        """The commodities represented by the goods this base sells, mapped to their prices."""
+        return {good.commodity(): price for good, price in self.sells().items() if isinstance(good, CommodityGood)}
+
+    def buys_commodities(self) -> Dict[Commodity, int]:
+        """The commodities represented by the goods this base buys, mapped to their prices."""
+        return {good.commodity(): price for good, price in self.buys().items() if isinstance(good, CommodityGood)}
+
+    def sells_equipment(self) -> Dict[Equipment, int]:
+        """The equipment represented by the goods this base sells, mapped to their prices."""
+        return {good.equipment_(): price for good, price in self.sells().items() if type(good) is EquipmentGood}
+
+    def sells_ships(self) -> Dict[Ship, int]:
+        """The ships represented by the goods this base sells, mapped to their cost."""
+        return {good.ship(): good.cost() for good in self.sells() if isinstance(good, ShipPackage)}
 
 
 class Faction(Entity):
