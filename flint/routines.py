@@ -8,76 +8,122 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 This file contains routines for parsing specific sets of information
 from the game files. All exported functions return EntitySets.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, Union
 from collections import defaultdict
+import warnings
 
 from . import paths
 from . import cached
 from .formats import ini
+from .maps import PosVector, RotVector
+
 from .entities import EntitySet
-from .entities import Commodity, Ship
+from .entities import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
+from .entities import Commodity, Equipment, Armor, ShieldGenerator, Thruster, Gun, Engine, Power, ShieldBattery, \
+    CounterMeasure, CounterMeasureDropper, Scanner, Tractor, CargoPod, CloakingDevice, RepairKit, Mine, MineDropper
+from .entities import Ship
 from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
-from .maps import PosVector, RotVector
 
 
 @cached
 def get_systems() -> EntitySet[System]:
     """All systems defined in the game files."""
-    systems = ini.parse(paths.inis['universe'])['system']
-
+    systems = ini.sections(paths.inis['universe'])['system']
     return EntitySet(System(**s, ids_name=s.pop('strid_name')) for s in systems if 'file' in s)
 
 
 @cached
 def get_bases() -> EntitySet[Base]:
     """All bases defined in the game files."""
-    bases = ini.parse(paths.inis['universe'])['base']
-
-    return EntitySet(Base(**b, ids_name=b.pop('strid_name'), ids_info=None, _market=_get_markets()[b['nickname']])
-                     for b in bases)
-
-
-@cached
-def get_commodities() -> EntitySet[Commodity]:
-    """All commodities defined in the game files."""
-    path = paths.construct_path('DATA/EQUIPMENT/select_equip.ini')
-    commodities = ini.parse(path)['commodity']
-
-    result = []
-
-    for c in commodities:
-        good = _get_goods()[c['nickname']]
-        market = _get_markets()[c['nickname']]
-        result.append(Commodity(**c, item_icon=good.get('item_icon'), price=good['price'], _market=market))
-
-    return EntitySet(result)
+    bases = ini.sections(paths.inis['universe'])['base']
+    return EntitySet(Base(**b, ids_name=b['strid_name']) for b in bases if 'strid_name' in b)
 
 
 @cached
 def get_factions() -> EntitySet[Faction]:
     """All groups (i.e. factions) defined in the game files."""
-    groups = ini.parse(paths.inis['initial_world'])['group']
+    groups = ini.sections(paths.inis['initial_world'])['group']
     return EntitySet(Faction(**g) for g in groups)
+
+
+@cached
+def get_goods() -> EntitySet[Good]:
+    """All goods defined in the game files."""
+    goods = ini.sections(paths.inis['goods'])['good']
+    result = []
+
+    for g in goods:
+        if g['category'] == 'ship':
+            result.append(ShipPackage(**g))
+        elif g['category'] == 'equipment':
+            result.append(EquipmentGood(**g))
+        elif g['category'] == 'commodity':
+            result.append(CommodityGood(**g))
+        elif g['category'] == 'shiphull':
+            result.append(ShipHull(**g))
+        else:
+            result.append(Good(**g))
+    return EntitySet(result)
+
+
+@cached
+def get_equipment() -> EntitySet[Equipment]:
+    """All equipment defined in the game files."""
+    equipment = ini.parse(paths.inis['equipment'])
+
+    section_name_to_type = {
+        'thruster': Thruster,
+        'commodity': Commodity,
+        'gun': Gun,
+        'armor': Armor,
+        'engine': Engine,
+        'shieldgenerator': ShieldGenerator,
+        'power': Power,
+        'countermeasuredropper': CounterMeasureDropper,
+        'countermeasure': CounterMeasure,
+        'minedropper': MineDropper,
+        'mine': Mine,
+        'scanner': Scanner,
+        'tractor': Tractor,
+        'cargopod': CargoPod,
+        'cloakingdevice': CloakingDevice,
+        'repairkit': RepairKit,
+        'shieldbattery': ShieldBattery,
+    }
+
+    def generate_entities():
+        for section, contents in equipment:
+            if section in {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield', 'explosion',
+                           'lod', 'motor', 'lootcrate', 'munition'}:
+                continue  # not really entities, see docstring for equipment.py
+            if section in section_name_to_type:
+                try:
+                    yield section_name_to_type[section](**contents)
+                except TypeError as e:
+                    warnings.warn(f'Failed to initialise equipment of type {section!r}: {e.args[0]}')
+            else:
+                warnings.warn(f'Unknown equipment type {section!r} - ignoring')
+
+    return EntitySet(generate_entities())
+
+
+@cached
+def get_commodities() -> EntitySet[Commodity]:
+    """All commodities defined in the game files. Commodities are actually a type of equipment, so this function
+    is for convenience's sake."""
+    return get_equipment().of_type(Commodity)
 
 
 @cached
 def get_ships() -> EntitySet[Ship]:
     """All ships defined in the game files."""
-    stats = ini.parse(paths.inis['ships'])['ship']
-    result: List[Ship] = []
+    ships = ini.sections(paths.inis['ships'])['ship']
+    result = []
 
-    for s in stats:
-        try:
-            hull = _get_goods()[s['nickname']]
-            package = _get_goods()[hull['nickname']]
-            market = _get_markets()[package['nickname']]
-            ship = Ship(**s, item_icon=hull['item_icon'], price=hull['price'], _market=market, _hull=hull,
-                        _package=package)
-        except (KeyError, TypeError):
-            # ship not sold anywhere or lacking infocards todo: how should we handle this?
-            continue
-        result.append(ship)
+    for s in ships:
+        if 'ids_info3' in s:
+            result.append(Ship(**s))
 
     return EntitySet(result)
 
@@ -89,78 +135,67 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
     contents = ini.parse(system.definition_path())
 
     # categorise objects based on their keys
-    def modify_solar(solar: Dict):
-        """Common dict modifications for all solar types."""
-        solar['_system'] = system
-        solar['pos'] = PosVector(*o['pos'])
-        solar.setdefault('ids_info', None)  # not everything that ought to have ids_info does...
-        return solar
-
-    for o in contents.get('object', []):
-        if 'ids_name' not in o:
+    for solar_type, attributes in contents:
+        if 'ids_name' not in attributes:
             continue
-        o = modify_solar(o)
-        keys = o.keys()
-        if {'base', 'reputation', 'space_costume'} <= keys:
-            result.append(BaseSolar(**o))
-        elif 'goto' in keys:
-            result.append(Jump(**o))
-        elif 'prev_ring' in keys or 'next_ring' in keys:
-            result.append(TradeLaneRing(**o))
-        elif 'loadout' in keys and 'reputation' not in keys:
-            result.append(Wreck(**o))
-        elif 'star' in keys:
-            result.append(Star(**o))
-        elif 'spin' in keys:
-            result.append(PlanetaryBase(**o) if 'base' in keys else Planet(**o))
-        else:
-            result.append(Object(**o))
+        attributes['_system'] = system
+        attributes['pos'] = PosVector(*attributes['pos'])
+        attributes['rot'] = RotVector(*attributes['rot'])
 
-    for z in contents.get('zone', []):
-        z = modify_solar(z)
-        if 'ids_name' in z.keys():
+        if solar_type == 'object':
+            o = attributes
+            keys = o.keys()
+            if {'base', 'reputation', 'space_costume'} <= keys:
+                result.append(BaseSolar(**o))
+            elif 'goto' in keys:
+                result.append(Jump(**o))
+            elif 'prev_ring' in keys or 'next_ring' in keys:
+                result.append(TradeLaneRing(**o))
+            elif 'loadout' in keys and 'reputation' not in keys:
+                result.append(Wreck(**o))
+            elif 'star' in keys:
+                result.append(Star(**o))
+            elif 'spin' in keys:
+                result.append(PlanetaryBase(**o) if 'base' in keys else Planet(**o))
+            else:
+                result.append(Object(**o))
+
+        elif solar_type == 'zone':
+            z = attributes
             result.append(Zone(**z))
 
     return EntitySet(result)
 
 
 @cached
-def _get_goods() -> Dict[str, Dict]:
-    # This is an internal method. A good is anything that can be bought or sold.
-    # get_commodities, get_ships and get_equipment link goods up to objects
-    goods = ini.parse(paths.inis['goods'])['good']  # todo: equipment too
+def get_markets() -> Dict[Union[Base, Good], Dict[bool, Dict[Union[Good, Base], int]]]:
+    """Market (i.e. economy) data for the universe. Result is of the form
+    {base/good nickname -> {whether sold -> (good/base entity, price at base}}."""
+    market = ini.sections(paths.inis['markets'], fold_values=False)['basegood']
 
-    result = {}
-    for g in goods:
-        # fold ship components into each other (this makes loading ships easier)
-        if g['category'] == 'shiphull':
-            key = 'ship'
-        elif g['category'] == 'ship':
-            key = 'hull'
-        else:
-            key = 'nickname'
-        result[g[key]] = g
-    return result
+    goods = get_goods()
+    bases = get_bases()
 
-
-@cached
-def _get_markets() -> Dict[str, Dict[bool, List[Tuple[str, int]]]]:
-    """Result is of the form base/good nickname -> {sold -> (good/base nickname, price at base}}"""
-    market = ini.parse(paths.inis['markets'], fold_values=False)['basegood']
-    goods = _get_goods()
-    result = defaultdict(lambda: {True: [], False: []})
+    result = defaultdict(lambda: {True: {}, False: {}})
     for b in market:
-        base = b['base'][0]
-        base_market = b['marketgood']
-        for good, min_rank, min_rep, min_stock, max_stock, depreciate, multiplier, *_ in base_market:
+        try:
+            base_entity = bases[b['base'][0]]
+        except IndexError:
+            warnings.warn('BaseGood has no base')
+            continue
+
+        for good, min_rank, min_rep, min_stock, max_stock, depreciate, multiplier, *_ in b['marketgood']:
             if not multiplier:
                 continue
-            try:
-                sold = not (min_stock == 0 or max_stock == 0)
-                price_at_base = int(round(goods[good]['price'] * multiplier))
-            except KeyError:
-                continue  # this is expected for ship packages, which do not appear in market sections
 
-            result[base][sold].append((good, price_at_base))
-            result[good][sold].append((base, price_at_base))
+            try:
+                good_entity = goods[good]
+            except KeyError:
+                warnings.warn(f'BaseGood refers to undefined good: {good!r}')
+                continue
+            sold = not (min_stock == 0 or max_stock == 0)
+            price_at_base = int(round(good_entity.price * multiplier))
+
+            result[base_entity][sold][good_entity] = price_at_base
+            result[good_entity][sold][base_entity] = price_at_base
     return result

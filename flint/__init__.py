@@ -29,12 +29,14 @@ def cached(function):
 
 
 from . import paths
-from .routines import get_commodities, get_bases, get_ships, get_systems, get_factions
+from .routines import get_commodities, get_bases, get_equipment, get_ships, get_systems, get_factions, get_goods
 
 
 shorthand = {'bases': get_bases,
              'commodities': get_commodities,
+             'equipment': get_equipment,
              'factions': get_factions,
+             'goods': get_goods,
              'ships': get_ships,
              'systems': get_systems}
 

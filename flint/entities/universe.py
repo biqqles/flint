@@ -14,6 +14,9 @@ from .. import paths
 from .. import routines
 from . import Entity, EntitySet
 from .solars import BaseSolar
+from .equipment import Equipment, Commodity
+from .ships import Ship
+from .goods import EquipmentGood, CommodityGood, ShipPackage
 
 
 class System(Entity):
@@ -76,8 +79,8 @@ class System(Entity):
 
 class Base(Entity):
     """A space station or colonised planet, operated by a Faction."""
+    ids_info = None  # infocard is defined by the base's solar
     system: str
-    _market: Dict
 
     def infocard(self, markup='html') -> str:
         """The infocard of this base's solar (Base sections do not define ids_info)."""
@@ -89,7 +92,7 @@ class Base(Entity):
 
     def solar(self) -> Optional['BaseSolar']:
         """Confusingly, Freelancer defines bases separately to their physical representation."""
-        return self.system_().bases().where(base=self.nickname).arb
+        return self.system_().bases().where(base=self.nickname).first
 
     def has_solar(self) -> bool:
         """Whether this base has a physical solar."""
@@ -99,13 +102,32 @@ class Base(Entity):
         """The sector of this base's solar in its system."""
         return self.solar().sector()
 
-    def sells(self) -> Dict[str, int]:
-        """The goods this base sells, of the form {good -> price}."""
-        return dict(self._market[True])
+    def market(self):
+        return routines.get_markets()[self]
 
-    def buys(self) -> Dict[str, int]:
+    def sells(self) -> Dict['Good', int]:
+        """The goods this base sells, of the form {good -> price}."""
+        return self.market()[True]
+
+    def buys(self) -> Dict['Good', int]:
         """The goods this base buys, of the form {good -> price}"""
-        return dict(self._market[False])
+        return self.market()[False]
+
+    def sells_commodities(self) -> Dict[Commodity, int]:
+        """The commodities represented by the goods this base sells, mapped to their prices."""
+        return {good.commodity(): price for good, price in self.sells().items() if isinstance(good, CommodityGood)}
+
+    def buys_commodities(self) -> Dict[Commodity, int]:
+        """The commodities represented by the goods this base buys, mapped to their prices."""
+        return {good.commodity(): price for good, price in self.buys().items() if isinstance(good, CommodityGood)}
+
+    def sells_equipment(self) -> Dict[Equipment, int]:
+        """The equipment represented by the goods this base sells, mapped to their prices."""
+        return {good.equipment_(): price for good, price in self.sells().items() if type(good) is EquipmentGood}
+
+    def sells_ships(self) -> Dict[Ship, int]:
+        """The ships represented by the goods this base sells, mapped to their cost."""
+        return {good.ship(): good.cost() for good in self.sells() if isinstance(good, ShipPackage)}
 
 
 class Faction(Entity):

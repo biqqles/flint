@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Hashable, Type
+from typing import TypeVar, Iterable, Generic, Type, Optional
 from collections.abc import Mapping
 import operator
 import pprint
@@ -37,8 +37,8 @@ class Entity:
     dataclassy.create_dataclass to dynamically define a dataclass and then use these classes as mixins.
     """
     nickname: str  # a unique string identifier for this entity
-    ids_name: int  # resource id for name. note this is occasionally referred to as strid_name in the game files
-    ids_info: int  # resource id for infocard
+    ids_name: Optional[int]  # resource id for name. newcharacter.ini and universe.ini call this strid_name instead
+    ids_info: Optional[int]  # resource id for infocard
 
     def name(self) -> str:
         """The display name of this entity."""
@@ -68,14 +68,16 @@ T = TypeVar('T')
 
 class EntitySet(Mapping, Generic[T]):
     """An immutable collection of entities, indexed by nickname."""
+    pprint.sorted = lambda v, key=None: v  # override pprint's sorted implementation to print in insertion order
+
     def __init__(self, entities: Iterable[T]):
         self._map = {e.nickname: e for e in entities}
 
     def __repr__(self):
-        pprint.sorted = lambda v, key=None: v  # override pprint's sorted implementation to print in insertion order
-        return pprint.pformat(self._map)
+        return f'EntitySet({pprint.pformat(self._map)})'
 
     def __getitem__(self, key: str) -> T:
+        assert type(key) is str
         return self._map[key]
 
     def __iter__(self):
@@ -84,7 +86,7 @@ class EntitySet(Mapping, Generic[T]):
 
     def __contains__(self, item):
         """Membership checking is as per hash table."""
-        return isinstance(item, Hashable) and item in self._map
+        return type(item) is str and item in self._map
 
     def __len__(self):
         """Length is the size of the map."""
@@ -100,7 +102,7 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
-    def of_type(self, type_: Type) -> 'EntitySet[T]':
+    def of_type(self, type_: Type[T]) -> 'EntitySet[T]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
 
@@ -119,13 +121,15 @@ class EntitySet(Mapping, Generic[T]):
         return EntitySet(e for e in self if op(vars(e).get(field) or getattr(e, field)(), value))
 
     @property
-    def arb(self) -> T:
-        """Another convenience function: return an arbitrary Entity in the set (actually the first now dicts are
-        ordered!). For testing."""
+    def first(self) -> Optional[T]:
+        """Return the first entity in the set, or None if it is empty. This is useful both for testing and extracting
+        the one member of a unit set when it is expected that a query will return exactly one result."""
         return next(iter(self), None)
 
 
 # exported types
-from .goods import Ship, Commodity
-from .solars import Solar, Object, Jump, BaseSolar, Planet, Star, PlanetaryBase, TradeLaneRing, Wreck, Zone
-from .universe import Base, System, Faction
+from .equipment import *
+from .goods import *
+from .ships import *
+from .solars import *
+from .universe import *
