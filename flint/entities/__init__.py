@@ -37,8 +37,8 @@ class Entity:
     dataclassy.create_dataclass to dynamically define a dataclass and then use these classes as mixins.
     """
     nickname: str  # a unique string identifier for this entity
-    ids_name: int  # resource id for name. note this is occasionally referred to as strid_name in the game files
-    ids_info: int  # resource id for infocard
+    ids_name: Optional[int]  # resource id for name. newcharacter.ini and universe.ini call this strid_name instead
+    ids_info: Optional[int]  # resource id for infocard
 
     def name(self) -> str:
         """The display name of this entity."""
