@@ -92,7 +92,7 @@ class Base(Entity):
 
     def solar(self) -> Optional['BaseSolar']:
         """Confusingly, Freelancer defines bases separately to their physical representation."""
-        return self.system_().bases().where(base=self.nickname).arb
+        return self.system_().bases().where(base=self.nickname).first
 
     def has_solar(self) -> bool:
         """Whether this base has a physical solar."""

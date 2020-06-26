@@ -14,6 +14,7 @@ from ..formats import dll
 
 class Solar(Entity):
     """A solar is something fixed in space (this name comes from the DATA/SOLAR directory)."""
+    ids_info = None
     pos: maps.PosVector  # position vector for this solar
     rotate: maps.RotVector = maps.RotVector(0, 0, 0)  # rotation vector for this solar (defaults to no rotation)
     _system: 'System'  # the system this solar resides in

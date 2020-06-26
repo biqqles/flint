@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module contains definitions for entities in Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Type
+from typing import TypeVar, Iterable, Generic, Type, Optional
 from collections.abc import Mapping
 import operator
 import pprint
@@ -121,9 +121,9 @@ class EntitySet(Mapping, Generic[T]):
         return EntitySet(e for e in self if op(vars(e).get(field) or getattr(e, field)(), value))
 
     @property
-    def arb(self) -> T:
-        """Another convenience function: return an arbitrary Entity in the set (actually the first now dicts are
-        ordered!). For testing."""
+    def first(self) -> Optional[T]:
+        """Return the first entity in the set, or None if it is empty. This is useful both for testing and extracting
+        the one member of a unit set when it is expected that a query will return exactly one result."""
         return next(iter(self), None)
 
 

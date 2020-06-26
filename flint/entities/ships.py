@@ -29,10 +29,10 @@ class Ship(Entity):
     angular_drag: Tuple[float, float, float]
 
     def hull(self):
-        return routines.get_goods().of_type(ShipHull).where(ship=self.nickname).arb
+        return routines.get_goods().of_type(ShipHull).where(ship=self.nickname).first
 
     def package(self):
-        return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).arb
+        return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).first
 
     def price(self):
         try:
