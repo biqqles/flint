@@ -24,7 +24,6 @@ from .. import routines
 class Equipment(Entity):
     """Something which can be mounted on a ship or carried in its hold."""
     lootable: bool = False
-    mass: int
 
     def icon(self) -> bytes:
         """This equipment's icon in TGA format."""
