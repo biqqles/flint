@@ -31,13 +31,15 @@ class Equipment(Entity):
         return self.good().icon()
 
     def good(self) -> Good:
+        """The good entity for this piece of equipment."""
         return routines.get_goods().of_type(EquipmentGood).where(equipment=self.nickname).first
 
     def sold_at(self) -> Dict['Base', int]:
-        """A dict of bases that sell this good of the form {base_nickname: price}. All bases buy equipment."""
+        """A dict of bases that sell this good of the form {base: price}. All bases buy equipment."""
         return self.good().sold_at()
 
-    def price(self):
+    def price(self) -> int:
+        """The default price of this equipment."""
         return self.good().price
 
 
@@ -69,17 +71,17 @@ class Mine(Equipment):
 
 
 class MineDropper(Weapon):
-    """A mine that can be dropped into space."""
+    """A dispenser for mines."""
 
 
 class CloakingDevice(Weapon):
     """A cloaking device. Used in cutscenes in the campaign as well as on servers with cloaking devices enabled through
-    FLHook"""
+    FLHook."""
 
 
 # equipment typically defined in st_equip.ini
 class Thruster(External):
-    """A thruster that provides supplementary power and velocity to the main engine."""
+    """A thruster that provides supplementary acceleration and velocity to the main engine."""
     power_usage: float
 
 
@@ -99,7 +101,7 @@ class Power(Mountable):
 
 
 class Tractor(Mountable):
-    """A tractor beam generator"""
+    """A tractor beam generator."""
     max_length: int  # range of beam in M
 
 
@@ -127,22 +129,22 @@ class ShieldBattery(Equipment):
 
 
 # equipment typically defined in engine_equip.ini
-class Engine(Equipment):
+class Engine(Mountable):
     """A reaction engine that must be mounted to a ship to provide propulsion."""
 
 
 # equipment typically defined in select_equip.ini
 class Armor(Mountable):
     """An armour upgrade."""
-    hit_pts_scale: float
+    hit_pts_scale: float  # multiplier applied to ship hull hit points when mounted
 
 
 class CargoPod(Mountable):
-    """A cargo pod. These appear to be entirely cosmetic in the final game."""
+    """A cargo pod. These can absorb damage but this is their only function in the final game."""
 
 
 class Commodity(Equipment):
-    """A Commodity is a tradeable piece of "equipment". Unlike other forms of Equipment, commodities can typically
+    """A Commodity is a tradeable piece of "equipment". Unlike other forms of equipment, commodities can typically
     be bought and sold for variable amounts on different bases."""
     decay_per_second: int
     volume: int  # volume of one unit in ship's cargo bay
@@ -153,6 +155,6 @@ class Commodity(Equipment):
     def highest_price(self):
         return
 
-    def bought_at(self) -> Dict['Base', int]:
-        """A dict of bases that sell this good of the form {base_nickname: price}. All bases buy equipment."""
+    def sold_at(self) -> Dict['Base', int]:
+        """A dict of bases that sell this commodity of the form {base: price}."""
         return self.good().bought_at()
