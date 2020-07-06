@@ -23,6 +23,10 @@ class Solar(Entity):
         """The human-readable navmap coordinate (the centre of) this solar resides in."""
         return maps.pos_to_sector(self.pos, self._system.navmapscale)
 
+    def system(self) -> 'System':
+        """The entity of the system this solar resides in."""
+        return self._system
+
 
 class Object(Solar):
     """Generic class for a celestial body - a solid object in space. Objects are automatically classified into
