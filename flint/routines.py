@@ -140,7 +140,6 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
             continue
         attributes['_system'] = system
         attributes['pos'] = PosVector(*attributes['pos'])
-        attributes['rot'] = RotVector(*attributes['rot'])
 
         if solar_type == 'object':
             o = attributes
