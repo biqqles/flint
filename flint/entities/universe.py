@@ -94,6 +94,10 @@ class Base(Entity):
         """Confusingly, Freelancer defines bases separately to their physical representation."""
         return self.system_().bases().where(base=self.nickname).first
 
+    def owner(self) -> 'Faction':
+        """The faction which owns this base (its IFF, in other words)."""
+        return self.solar().owner() if self.has_solar() else routines.get_factions().first  # todo: use mbases
+
     def has_solar(self) -> bool:
         """Whether this base has a physical solar."""
         return self.solar() is not None
