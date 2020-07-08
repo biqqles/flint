@@ -14,7 +14,7 @@ Light, Motor, LootCrate, Munition and Shield. Currently these are excluded
 as they do not exactly fit flint's entity model, and partly for the sake
 of simplicity in the first incarnation of equipment parsing.
 """
-from typing import Dict
+from typing import Dict, Optional
 
 from . import Entity
 from .goods import Good, EquipmentGood
@@ -29,17 +29,17 @@ class Equipment(Entity):
         """This equipment's icon in TGA format."""
         return self.good().icon()
 
-    def good(self) -> Good:
+    def good(self) -> Optional[Good]:
         """The good entity for this piece of equipment."""
         return routines.get_goods().of_type(EquipmentGood).where(equipment=self.nickname).first
 
     def sold_at(self) -> Dict['Base', int]:
         """A dict of bases that sell this good of the form {base: price}. All bases buy equipment."""
-        return self.good().sold_at()
+        return self.good().sold_at() if self.good() else {}
 
     def price(self) -> int:
         """The default price of this equipment."""
-        return self.good().price
+        return self.good().price if self.good() else 0
 
 
 class Mountable(Equipment):
