@@ -16,6 +16,7 @@ format most used by mods as it facilitates editing.
 from typing import Union, List, Dict, Any, Tuple
 from collections import defaultdict
 from functools import lru_cache
+import concurrent.futures
 import itertools
 import warnings
 
@@ -43,7 +44,8 @@ def parse(paths: Union[str, Tuple[str]], fold_values=True) -> List[Tuple[str, Di
     if isinstance(paths, str):  # accept both single paths and tuples of paths
         paths = [paths]
 
-    sections_ = itertools.chain(*map(parse_file, paths))
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        sections_ = itertools.chain(*executor.map(parse_file, paths))
 
     return [(name, fold_dict(entries, fold_values)) for name, entries in filter(None, sections_)]
 
