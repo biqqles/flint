@@ -154,6 +154,6 @@ class Commodity(Equipment):
     def highest_price(self):
         return
 
-    def sold_at(self) -> Dict['Base', int]:
-        """A dict of bases that sell this commodity of the form {base: price}."""
+    def bought_at(self) -> Dict['Base', int]:
+        """A dict of bases that buy this commodity of the form {base: price}."""
         return self.good().bought_at()
