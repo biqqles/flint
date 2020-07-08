@@ -36,6 +36,10 @@ class Ship(Entity):
         """This ship's package entity."""
         return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).first
 
+    def sold_at(self) -> List['Base']:
+        """A list of bases which sell this ship."""
+        return list(self.package().sold_at().keys())
+
     def price(self) -> int:
         """The price of this ship's hull."""
         try:
