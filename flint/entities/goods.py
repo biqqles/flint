@@ -5,7 +5,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from dataclassy import Internal
 
@@ -19,7 +19,7 @@ class Good(Entity):
     abstract definition of commodities, equipment and ships to something that is tradeable."""
     ids_info = None
     ids_name = None
-    item_icon = None  # path to icon, relative to DATA
+    item_icon: Optional[str] = None  # path to icon, relative to DATA
     price: int  # the default price for this good, pre market multiplier
 
     def icon_path(self) -> str:
