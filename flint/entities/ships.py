@@ -5,7 +5,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 import math
 from statistics import mean
 
@@ -28,16 +28,20 @@ class Ship(Entity):
     steering_torque: Tuple[float, float, float]
     angular_drag: Tuple[float, float, float]
 
-    def hull(self) -> ShipHull:
+    def hull(self) -> Optional[ShipHull]:
         """This ship's hull entity."""
         return routines.get_goods().of_type(ShipHull).where(ship=self.nickname).first
 
-    def package(self) -> ShipPackage:
+    def package(self) -> Optional[ShipPackage]:
         """This ship's package entity."""
+        if not self.hull():
+            return None
         return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).first
 
     def sold_at(self) -> List['Base']:
         """A list of bases which sell this ship."""
+        if not self.package():
+            return []
         return list(self.package().sold_at().keys())
 
     def price(self) -> int:
