@@ -12,6 +12,10 @@ world.
 Freelancer actually stores INIs in a compressed binary-INI (BINI)
 format, but will accept text INIs happily. This is therefore the
 format most used by mods as it facilitates editing.
+
+This file is intended to be the main interface for accessing INI
+*and* BINI functions, as it contains higher-level functions as well
+as logic for checking whether a .ini file is an INI or a BINI.
 """
 from typing import Union, List, Dict, Any, Tuple
 from collections import defaultdict
@@ -48,6 +52,12 @@ def parse(paths: Union[str, Tuple[str]], fold_values=True) -> List[Tuple[str, Di
         sections_ = itertools.chain(*executor.map(parse_file, paths))
 
     return [(name, fold_dict(entries, fold_values)) for name, entries in filter(None, sections_)]
+
+
+def group(paths: Union[str, Tuple[str]], fold_sections=True, fold_values=True):
+    """Similar to `parse` but groups contiguous sequences of the same section name together."""
+    groups = itertools.groupby(parse(paths, fold_values), key=lambda pair: pair[0])  # group by section name
+    return [next(iter(fold_dict(contents, fold_sections).items())) for key, contents in groups]
 
 
 def parse_file(path: str):
