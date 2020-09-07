@@ -10,8 +10,7 @@ import os
 from dataclassy import Internal
 
 from ..formats import dll
-from .. import paths
-from .. import routines
+from .. import paths, routines, missions
 from . import Entity, EntitySet
 from .solars import BaseSolar
 from .equipment import Equipment, Commodity
@@ -94,13 +93,18 @@ class Base(Entity):
         """Confusingly, Freelancer defines bases separately to their physical representation."""
         return self.system_().bases().where(base=self.nickname).first
 
-    def owner(self) -> 'Faction':
-        """The faction which owns this base (its IFF, in other words)."""
-        return self.solar().owner() if self.has_solar() else routines.get_factions().first  # todo: use mbases
-
     def has_solar(self) -> bool:
         """Whether this base has a physical solar."""
         return self.solar() is not None
+
+    def mbase(self) -> Optional[missions.MBase]:
+        """The mission base entry for this base."""
+        return missions.get_mbases().get(self.nickname)
+
+    def owner(self) -> 'Faction':
+        """The faction which owns this base (its IFF)."""
+        return self.solar().owner() if self.has_solar() \
+            else routines.get_factions()[self.mbase().local_faction] if self.mbase() else None
 
     def sector(self) -> str:
         """The sector of this base's solar in its system."""
@@ -156,6 +160,14 @@ class Faction(Entity):
     def can_dock_at(self, base: BaseSolar) -> bool:
         """Whether this faction can dock at the given base."""
         return self.rep_sheet()[base.owner()] > self.NODOCK_REP
+
+    def props(self) -> missions.FactionProps:
+        """The FactionProps entry for this faction."""
+        return missions.get_faction_props()[self.nickname]
+
+    def legality(self) -> str:
+        """The legality of this faction as defined in its FactionProps entry (Lawful or Unlawful)."""
+        return self.props().legality.capitalize()
 
     NODOCK_REP = -0.65
 
