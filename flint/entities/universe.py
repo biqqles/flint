@@ -161,6 +161,14 @@ class Faction(Entity):
         """Whether this faction can dock at the given base."""
         return self.rep_sheet()[base.owner()] > self.NODOCK_REP
 
+    def props(self) -> missions.FactionProps:
+        """The FactionProps entry for this faction."""
+        return missions.get_faction_props()[self.nickname]
+
+    def legality(self) -> str:
+        """The legality of this faction as defined in its FactionProps entry (Lawful or Unlawful)."""
+        return self.props().legality.capitalize()
+
     NODOCK_REP = -0.65
 
 
