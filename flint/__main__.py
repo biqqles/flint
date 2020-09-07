@@ -35,14 +35,14 @@ sys.ps2 = '              ... '
 parser = argparse.ArgumentParser(description='flint, a parser for Freelancer and its formats')
 parser.add_argument('freelancer_dir', help='Path to a working Freelancer install directory')
 parser.add_argument('-d', '--discovery', help='Whether Freelancer dir is Discovery modded.', action='store_true')
-parser.add_argument('-w', '--warnings', help='Show warnings for improperly configured mods', action='store_true')
+parser.add_argument('-s', '--silent', help='Silence all warnings', action='store_true')
 try:
     arguments = parser.parse_args()
 except SystemExit:
     os._exit(1)
 
 # configure warnings
-warnings.simplefilter('always' if arguments.warnings else 'ignore')
+warnings.simplefilter('ignore' if arguments.silent else 'always')
 
 import flint as fl
 fl.paths.set_install_path(arguments.freelancer_dir, arguments.discovery)
