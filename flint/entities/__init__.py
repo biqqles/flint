@@ -64,6 +64,7 @@ class Entity:
 
 
 T = TypeVar('T')
+F = TypeVar('F')
 
 
 class EntitySet(Mapping, Generic[T]):
@@ -102,7 +103,7 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
-    def of_type(self, type_: Type[T]) -> 'EntitySet[T]':
+    def of_type(self, type_: Type[F]) -> 'EntitySet[F]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
 
