@@ -21,7 +21,7 @@ from . import cached, paths
 @cached
 def get_faction_props() -> Dict[str, 'FactionProps']:
     """Produce a dictionary of faction nicknames to their associated FactionProps object."""
-    props = ini.sections(paths.construct_path('/DATA/MISSIONS/faction_prop.ini'))
+    props = ini.sections(paths.construct_path('DATA/MISSIONS/faction_prop.ini'))
     return {p['affiliation']: FactionProps(**p) for p in props['factionprops']}
 
 
@@ -85,6 +85,7 @@ class BaseFaction:
     npc: List[str] = []
 
 
+# noinspection PyPep8Naming
 @dataclass
 class GF_NPC:
     """Found in mbases.ini, this section describes an individual NPC present on the preceding base."""
