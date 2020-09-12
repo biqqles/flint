@@ -131,6 +131,6 @@ class EntitySet(Mapping, Generic[T]):
 # exported types
 from .equipment import *
 from .goods import *
-from .ships import *
+from .ship import *
 from .solars import *
 from .universe import *

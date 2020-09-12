@@ -14,7 +14,7 @@ from .. import paths, routines, missions
 from . import Entity, EntitySet
 from .solars import BaseSolar
 from .equipment import Equipment, Commodity
-from .ships import Ship
+from .ship import Ship
 from .goods import EquipmentGood, CommodityGood, ShipPackage
 
 

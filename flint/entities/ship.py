@@ -17,9 +17,9 @@ from .. import routines
 
 class Ship(Entity):
     """A starship with a cargo bay and possibly hardpoints for weapons."""
-    ids_info1: int
-    ids_info2: int
-    ids_info3: int
+    ids_info1: int  # ship description (ids_info stores statistics)
+    ids_info2: int  # extra stat names list
+    ids_info3: int  # extra stat values list
     ship_class: int
     hit_pts: int
     hold_size: int
@@ -65,7 +65,7 @@ class Ship(Entity):
             lookup = dll.lookup
         else:
             raise ValueError
-        return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info, self.ids_info2, self.ids_info3)))
+        return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info)))
 
     def type(self) -> str:
         """The name of the type (class) of this ship."""
