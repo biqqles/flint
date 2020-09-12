@@ -114,9 +114,8 @@ class Planet(Spheroid):
     spin: Tuple[float, float, float]
 
 
-class PlanetaryBase(BaseSolar, Planet):
+class PlanetaryBase(Planet, BaseSolar):
     """A base on the surface of a planet, typically accessible via a docking ring."""
-    pass
 
 
 class Zone(Solar):
