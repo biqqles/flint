@@ -5,10 +5,12 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-This module contains definitions for entities in Freelancer.
+This namespace contains definitions for entities found within
+Freelancer.
 """
 from typing import TypeVar, Iterable, Generic, Type, Optional
 from collections.abc import Mapping
+from functools import lru_cache
 import operator
 import pprint
 
@@ -93,6 +95,10 @@ class EntitySet(Mapping, Generic[T]):
         """Length is the size of the map."""
         return len(self._map)
 
+    def __hash__(self):
+        """The set of keys is constant for an EntitySet and allows it to be hashed."""
+        return hash(frozenset(self._map))
+
     def __add__(self, other) -> 'EntitySet[T]':
         """Two EntitySets can be added together to create a new EntitySet."""
         if type(other) is not type(self):
@@ -103,6 +109,7 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
+    @lru_cache()  # todo: not a particularly elegant solution to poor performance, revisit this method
     def of_type(self, type_: Type[F]) -> 'EntitySet[F]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
