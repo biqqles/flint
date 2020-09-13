@@ -12,10 +12,10 @@ for rich-text strings) to HTML.
 """
 from typing import Dict
 from os import SEEK_CUR
-import xml.etree.ElementTree as xml
 
 import deconstruct as c
 
+from ..interface import rdl_to_html, rdl_to_plaintext
 from .. import cached
 from .. import paths
 from . import WinStruct
@@ -25,7 +25,7 @@ resource_table: Dict[int, Dict[int, str]] = {}
 
 
 @cached
-def lookup(resource_id: int):
+def lookup(resource_id: int) -> str:
     """Looks up the text associated with a resource ID (string or HTML) in the resource dlls."""
     if resource_id is None:  # sometimes objects which should have infocards don't. Freelancer doesn't seem to care
         return ''
@@ -49,20 +49,15 @@ def lookup(resource_id: int):
 
 
 @cached
-def lookup_as_html(resource_id: int):
+def lookup_as_html(resource_id: int) -> str:
     """Looks up the given resource ID and translates RDL to HTML."""
-    result = lookup(resource_id)
-    for rdl, html in RDL_TO_HTML.items():
-        result = result.replace(rdl, html)
-    return result
+    return rdl_to_html(lookup(resource_id))
 
 
 @cached
-def lookup_as_plain(resource_id: int):
+def lookup_as_plain(resource_id: int) -> str:
     """Looks up the given resource ID and strips out all RDL tags. Paragraph tags are replaced with newlines."""
-    rdl = lookup(resource_id).replace('<PARA/>', '\n').replace('</PARA>', '')
-    tree = xml.fromstring(rdl)
-    return xml.tostring(tree, encoding='unicode', method='text')
+    return rdl_to_plaintext(lookup(resource_id))
 
 
 def parse(path: str, external_strid_offset: int) -> Dict[int, str]:
@@ -204,40 +199,3 @@ class ResourceDataEntry(WinStruct):
 
 class ResourceDirectoryString(WinStruct):
     Length: c.int16
-
-
-# A lookup table mapping RDL (Render Display List) tags to HTML(4). Freelancer, to my eternal horror, uses these for
-# formatting for strings inside these resource DLLs. Based on work by adoxa and cshake.
-# More information can be found in this thread: <https://the-starport.net/modules/newbb/viewtopic.php?&topic_id=562>
-RDL_TO_HTML = {
-    '<TRA data="1" mask="1" def="-2"/>':           '<b>',  # bold
-    '<TRA bold="true"/>':                          '<b>',  # rare bold
-    '<TRA data="0" mask="1" def="-1"/>':           '</b>',  # un-bold
-    '<TRA data="2" mask="3" def="-3"/>':           '<i>',  # italic 1
-    '<TRA data="0" mask="3" def="-1"/>':           '</i>',  # un-italic 1
-    '<TRA data="98" mask="-29" def="-3"/>':        '<i>',  # italic 2
-    '<TRA data="96" mask="-29" def="-1"/>':        '</i>',  # un-italic 2
-    '<TRA data="2" mask="2" def="-3"/>':           '<i>',  # italic 3
-    '<TRA data="0" mask="2" def="-1"/>':           '</i>',  # un-italic 3
-    '<TRA data="5" mask="5" def="-6"/>':           '<b><u>',  # (bold, underline) 1
-    '<TRA data="0" mask="5" def="-1"/>':           '</b></u>',  # un-(bold, underline) 1
-    '<TRA data="5" mask="7" def="-6"/>':           '<b><u>',  # (bold, underline) 2
-    '<TRA data="0" mask="7" def="-1"/>':           '</b></u>',  # un-(bold, underline) 2
-    '<TRA data="65280" mask="-32" def="31"/>':     '<font color="red">',  # red
-    '<TRA data="96" mask="-32" def="-1"/>':        '</font>',  # un-colour
-    '<TRA data="65281" mask="-31" def="30"/>':     '<b><font color="red">',  # (bold, red)
-    '<TRA data="96" mask="-31" def="-1"/>':        '</b></font>',  # un-(bold, red)
-    '<TRA data="-16777216" mask="-32" def="31"/>': '<font color="blue">',  # blue
-    '<PARA/>':                                     '<p>',  # newline
-    '</PARA>':                                     '</p>',
-    '<JUST loc="left"/>':                          '<p align="left">',  # newline with left-aligned text
-    '<JUST loc="center"/>':                        '<p align="center">',  # newline with centred text
-    '\xa0':                                        '&nbsp;',  # non-breaking space, is often present after the title
-    '<RDL>':                                       '',  # seemingly meaningless tags...
-    '</RDL>':                                      '',
-    '<TEXT>':                                      '',
-    '</TEXT>':                                     '',
-    '<PUSH/>':                                     '',
-    '<POP/>':                                      '',
-    '<?xml version="1.0" encoding="UTF-16"?>':     '',  # xml header; removed for neatness
-}
