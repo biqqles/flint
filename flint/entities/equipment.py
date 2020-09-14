@@ -86,10 +86,9 @@ class Thruster(External):
 
 class ShieldGenerator(External):
     """A piece of equipment that generates a shield bubble around a ship which absorbs damage from weapon fire."""
-    power_usage: float
-    shield_type: str
+    shield_type: str = ''  # the shield's technology type
     max_capacity: float
-    explosion_resistance: float
+    explosion_resistance: float = 0.0
 
 
 # equipment typically defined in misc_equip.ini
