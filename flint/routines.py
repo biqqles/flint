@@ -15,12 +15,13 @@ import warnings
 from . import paths
 from . import cached
 from .formats import ini
-from .maps import PosVector, RotVector
+from .maps import PosVector
 
 from .entities import EntitySet
 from .entities import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
 from .entities import Commodity, Equipment, Armor, ShieldGenerator, Thruster, Gun, Engine, Power, ShieldBattery, \
-    CounterMeasure, CounterMeasureDropper, Scanner, Tractor, CargoPod, CloakingDevice, RepairKit, Mine, MineDropper
+    CounterMeasure, CounterMeasureDropper, Scanner, Tractor, CargoPod, CloakingDevice, RepairKit, Mine, MineDropper, \
+    Munition
 from .entities import Ship
 from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
@@ -90,18 +91,20 @@ def get_equipment() -> EntitySet[Equipment]:
         'cloakingdevice': CloakingDevice,
         'repairkit': RepairKit,
         'shieldbattery': ShieldBattery,
+        'munition': Munition,
     }
 
     def generate_entities():
         for section, contents in equipment:
-            if section in {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield', 'explosion',
-                           'lod', 'motor', 'lootcrate', 'munition'}:
+            if section in {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield',
+                           'lod', 'motor', 'lootcrate', 'explosion'}:
                 continue  # not really entities, see docstring for equipment.py
             if section in section_name_to_type:
                 try:
                     yield section_name_to_type[section](**contents)
                 except TypeError as e:
-                    warnings.warn(f'Failed to initialise equipment of type {section!r}: {e.args[0]}')
+                    warnings.warn(f'Failed to initialise equipment of type {section!r} and nickname '
+                                  f'{contents.get("nickname")!r}: {e.args[0]}')
             else:
                 warnings.warn(f'Unknown equipment type {section!r} - ignoring')
 

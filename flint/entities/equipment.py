@@ -10,8 +10,8 @@ which can be mounted on a ship or carried in its hold.
 
 There are also several non-entity section types that appear in equipment
 files. These include Lod, TradeLane, InternalFX, AttachedFX, Explosion,
-Light, Motor, LootCrate, Munition and Shield. Currently these are excluded
-as they do not exactly fit flint's entity model, and partly for the sake
+Light, Motor, LootCrate, and Shield. Currently these are excluded as
+they do not exactly fit flint's entity model, and partly for the sake
 of simplicity in the first incarnation of equipment parsing.
 """
 from typing import Dict, Optional
@@ -56,26 +56,75 @@ class External(Mountable):
 # equipment typically defined in weapon_equip.ini
 class Weapon(External):
     """Abstract class for a piece of external equipment that is a weapon."""
+    refire_delay: float
+    projectile_archetype: str
 
 
 class Gun(Weapon):
     """A gun that goes 'pew'. Not much to be said."""
     power_usage: float
     muzzle_velocity: int
-    refire_delay: float
+    projectile_archetype: str
+    hp_gun_type: Optional[str] = None  # NPC guns lack this field
 
+    def munition(self) -> Optional['Munition']:
+        """The Munition entity for this weapon."""
+        return routines.get_equipment().get(self.projectile_archetype)
 
-class Mine(Equipment):
-    """A mine that can be dropped into space."""
+    def refire(self) -> float:
+        """The refire value as displayed in-game, which is the reciprocal of refire_delay."""
+        return 1 / self.refire_delay
+
+    def hull_damage(self) -> float:
+        """Hull damage dealt per shot."""
+        return self.munition().hull_damage
+
+    def shield_damage(self) -> float:
+        """Shield damage dealt per shot."""
+        return self.munition().energy_damage
+
+    def hull_dps(self) -> float:
+        """Hull damage dealt per second."""
+        return self.refire() * self.munition().hull_damage
+        
+    def shield_dps(self) -> float:
+        """Shield damage dealt per second."""
+        return self.refire() * self.munition().energy_damage
+
+    def energy_per_second(self) -> float:
+        """Energy consumption per second (i.e. power).."""
+        return self.refire() * self.power_usage
+
+    def efficiency(self) -> float:
+        """Energy consumption per second (i.e. power).."""
+        return ((self.hull_damage() + self.shield_damage()) / self.power_usage) if self.power_usage else 0.0
+
+    def technology(self) -> Optional[str]:
+        """The technology of this gun. Null for non-energy (e.g. kinetic) guns."""
+        return self.munition().weapon_type
+
+    def range(self) -> int:
+        """The range this weapon can shoot to."""
+        return int(self.muzzle_velocity * self.munition().lifetime)
 
 
 class MineDropper(Weapon):
     """A dispenser for mines."""
 
 
-class CloakingDevice(Weapon):
+class CloakingDevice(External):
     """A cloaking device. Used in cutscenes in the campaign as well as on servers with cloaking devices enabled through
     FLHook."""
+
+
+class Munition(Equipment):
+    """A projectile fired by a Weapon."""
+    hp_type: str
+    hull_damage: int = 0
+    energy_damage: int = 0
+    requires_ammo: bool = True  # todo: not sure about this default
+    weapon_type: Optional[str] = None  # present only for energy weapons
+    lifetime: float  # time in seconds that the projectile lingers in space before despawning
 
 
 # equipment typically defined in st_equip.ini
