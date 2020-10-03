@@ -81,7 +81,9 @@ class EntitySet(Mapping, Generic[T]):
         return f'EntitySet({pprint.pformat(self._map)})'
 
     def __getitem__(self, key: str) -> T:
-        assert type(key) is str
+        if type(key) is not str:
+            raise TypeError(f'Only strings may be used as indices, not {type(key)!r}')
+        assert type(key) is str, repr(type(key))
         return self._map[key]
 
     def __iter__(self):
@@ -95,6 +97,12 @@ class EntitySet(Mapping, Generic[T]):
     def __len__(self):
         """Length is the size of the map."""
         return len(self._map)
+
+    def __eq__(self, other: 'EntitySet'):
+        """EntitySets may be compared by comparing their maps."""
+        if not isinstance(other, EntitySet):
+            raise TypeError(f'Cannot compare EntitySet with {type(other)!r}')
+        return self._map == other._map
 
     def __hash__(self):
         """The set of keys is constant for an EntitySet and allows it to be hashed."""
