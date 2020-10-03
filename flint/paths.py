@@ -21,6 +21,8 @@ dlls: Dict[int, str] = {}  # dll number to path
 def set_install_path(new_path, discovery=False):
     """Lists the path to the installation"""
     global install
+    if not os.path.exists(new_path):
+        raise FileNotFoundError(new_path)
     assert is_probably_freelancer(new_path, discovery)
     install = new_path
     generate_index()
@@ -86,5 +88,5 @@ def generate_index():
     data = parsed['data'][0]
     data.update(root)
 
-    dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources, 1)})  # dll 0 is freelancer.exe itself
+    dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources, 1)})  # dll 0 is Freelancer.exe itself
     inis.update({category: tuple(construct_path('DATA', f) for f in files) for category, files in data.items()})
