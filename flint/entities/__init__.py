@@ -8,7 +8,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 This namespace contains definitions for entities found within
 Freelancer.
 """
-from typing import TypeVar, Iterable, Generic, Type, Optional
+from typing import TypeVar, Iterable, Generic, Type, Optional, Dict, Union
 from collections.abc import Mapping
 from functools import lru_cache
 import operator
@@ -71,11 +71,13 @@ F = TypeVar('F')
 
 class EntitySet(Mapping, Generic[T]):
     """An immutable collection of entities, indexed by nickname."""
-    pprint.sorted = lambda v, key=None: v  # override pprint's sorted implementation to print in insertion order
+    pprint.sorted = lambda v, key=None: v  # patch pprint's sorted implementation to print in insertion order
 
-    def __init__(self, entities: Iterable[T]):
-        self._map = {e.nickname: e for e in entities}
-        self._where_map = {}
+    def __init__(self, entities: Union[Iterable[T], Dict[str, T]]):
+        if type(entities) is dict:
+            self._map = entities
+        else:
+            self._map = {e.nickname: e for e in entities}
 
     def __repr__(self):
         return f'EntitySet({pprint.pformat(self._map)})'
@@ -118,10 +120,15 @@ class EntitySet(Mapping, Generic[T]):
         """An EntitySet can be extended."""
         return self + other
 
-    @lru_cache()  # todo: not a particularly elegant solution to poor performance, revisit this method
+    @lru_cache(maxsize=256)
     def of_type(self, type_: Type[F]) -> 'EntitySet[F]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
+
+    @lru_cache(maxsize=256)
+    def reindex(self, on: str) -> 'EntitySet[T]':
+        """Reindex this EntitySet on the field with name `on`."""
+        return EntitySet({getattr(entity, on): entity for entity in self})
 
     def where(self, op=operator.eq, **kwargs) -> 'EntitySet[T]':
         """Return a new EntitySet containing only Entities for which the given field matches the given condition.
@@ -135,12 +142,21 @@ class EntitySet(Mapping, Generic[T]):
         E.g. EntitySet(s for s in systems if s.nickname.startswith('rh'))"""
         assert len(kwargs) == 1
         field, value = next(iter(kwargs.items()))
+        if not callable(getattr(self.first, field, None)):
+            return self.reindex(field)
         return EntitySet(e for e in self if op(vars(e).get(field) or getattr(e, field)(), value))
+
+    def unique(self, **kwargs) -> Optional[T]:
+        """Analogous to `where` but returns the Entity which is guaranteed to uniquely match the specified field/value
+        combination. If no such Entity is present, return None."""
+        assert len(kwargs) == 1
+        field, value = next(iter(kwargs.items()))
+        return self.reindex(field).get(value)
 
     @property
     def first(self) -> Optional[T]:
-        """Return the first entity in the set, or None if it is empty. This is useful both for testing and extracting
-        the one member of a unit set when it is expected that a query will return exactly one result."""
+        """Return the first entity in the set, or None if it is empty. This is useful both for testing. If a query is
+        expected to return exactly one result, you likely want to use unique() instead of this property."""
         return next(iter(self), None)
 
 

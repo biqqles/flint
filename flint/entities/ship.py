@@ -30,13 +30,13 @@ class Ship(Entity):
 
     def hull(self) -> Optional[ShipHull]:
         """This ship's hull entity."""
-        return routines.get_goods().of_type(ShipHull).where(ship=self.nickname).first
+        return routines.get_goods().of_type(ShipHull).unique(ship=self.nickname)
 
     def package(self) -> Optional[ShipPackage]:
         """This ship's package entity."""
         if not self.hull():
             return None
-        return routines.get_goods().of_type(ShipPackage).where(hull=self.hull().nickname).first
+        return routines.get_goods().of_type(ShipPackage).unique(hull=self.hull().nickname)
 
     def sold_at(self) -> List['Base']:
         """A list of bases which sell this ship."""

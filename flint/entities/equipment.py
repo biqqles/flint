@@ -31,7 +31,7 @@ class Equipment(Entity):
 
     def good(self) -> Optional[Good]:
         """The good entity for this piece of equipment."""
-        return routines.get_goods().of_type(EquipmentGood).where(equipment=self.nickname).first
+        return routines.get_goods().of_type(EquipmentGood).unique(equipment=self.nickname)
 
     def sold_at(self) -> Dict['Base', int]:
         """A dict of bases that sell this good of the form {base: price}. All bases buy equipment."""
