@@ -14,7 +14,7 @@ Light, Motor, LootCrate, and Shield. Currently these are excluded as
 they do not exactly fit flint's entity model, and partly for the sake
 of simplicity in the first incarnation of equipment parsing.
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, cast
 
 from . import Entity
 from .goods import Good, EquipmentGood
@@ -59,6 +59,22 @@ class Weapon(External):
     refire_delay: float
     projectile_archetype: str
 
+    def refire(self) -> float:
+        """The refire value as displayed in-game, which is the reciprocal of refire_delay."""
+        return 1 / self.refire_delay
+
+    def hull_damage(self) -> float:
+        """Hull damage dealt per shot."""
+        raise NotImplementedError
+
+    def shield_damage(self) -> float:
+        """Shield damage dealt per shot."""
+        raise NotImplementedError
+
+    def projectile(self) -> 'Projectile':
+        """The Projectile fired or dropped by this weapon."""
+        return routines.get_equipment().get(self.projectile_archetype)
+
 
 class Gun(Weapon):
     """A gun that goes 'pew'. Not much to be said."""
@@ -66,14 +82,11 @@ class Gun(Weapon):
     muzzle_velocity: int
     projectile_archetype: str
     hp_gun_type: Optional[str] = None  # NPC guns lack this field
+    dispersion_angle: float = 0.0
 
     def munition(self) -> Optional['Munition']:
-        """The Munition entity for this weapon."""
-        return routines.get_equipment().get(self.projectile_archetype)
-
-    def refire(self) -> float:
-        """The refire value as displayed in-game, which is the reciprocal of refire_delay."""
-        return 1 / self.refire_delay
+        """The Munition fired by this weapon."""
+        return cast(Munition, self.projectile())
 
     def hull_damage(self) -> float:
         """Hull damage dealt per shot."""
@@ -86,7 +99,7 @@ class Gun(Weapon):
     def hull_dps(self) -> float:
         """Hull damage dealt per second."""
         return self.refire() * self.munition().hull_damage
-        
+
     def shield_dps(self) -> float:
         """Shield damage dealt per second."""
         return self.refire() * self.munition().energy_damage
@@ -111,20 +124,57 @@ class Gun(Weapon):
 class MineDropper(Weapon):
     """A dispenser for mines."""
 
+    def mine(self) -> Optional['Mine']:
+        """The Mine dropped by this weapon."""
+        return cast(Mine, self.projectile())
+
+    def hull_damage(self) -> float:
+        """The hull damage inflicted on contact with this dropper's mine."""
+        return self.mine().explosion().hull_damage
+
+    def shield_damage(self) -> float:
+        """The shield damage inflicted on contact with this dropper's mine."""
+        return self.mine().explosion().energy_damage
+
 
 class CloakingDevice(External):
     """A cloaking device. Used in cutscenes in the campaign as well as on servers with cloaking devices enabled through
     FLHook."""
 
 
-class Munition(Equipment):
+class Projectile(Equipment):
+    """Abstract. A projectile fired or dropped by a Weapon."""
+    lifetime: float  # time in seconds that the projectile lingers in space before despawning
+
+
+class Mine(Projectile):
+    """An explosive mine that can be dropped into space."""
+    explosion_arch: str  # nickname of Explosion
+    seek_dist: int
+    top_speed: int
+    acceleration: int
+
+    def explosion(self) -> Optional['Explosion']:
+        """The Explosion triggered by this mine."""
+        return routines.get_equipment().get(self.explosion_arch)
+
+
+class Munition(Projectile):
     """A projectile fired by a Weapon."""
     hp_type: str
     hull_damage: int = 0
     energy_damage: int = 0
     requires_ammo: bool = True  # todo: not sure about this default
     weapon_type: Optional[str] = None  # present only for energy weapons
-    lifetime: float  # time in seconds that the projectile lingers in space before despawning
+
+
+class Explosion(Projectile):
+    """A very strange thing to call equipment, whatever way you look at it, yet defined in weapon_equip."""
+    lifetime: Tuple[int, int]
+    radius: int
+    hull_damage: int
+    energy_damage: int
+    strength: int
 
 
 # equipment typically defined in st_equip.ini
@@ -165,6 +215,10 @@ class CounterMeasure(Equipment):
 
 class CounterMeasureDropper(Weapon):
     """A countermeasure dispenser."""
+
+    def countermeasure(self) -> Optional['CounterMeasure']:
+        """The CounterMeasure launched by this dropper."""
+        return routines.get_equipment.get(self.projectile_archetype)
 
 
 class RepairKit(Equipment):

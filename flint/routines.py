@@ -21,7 +21,7 @@ from .entities import EntitySet
 from .entities import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
 from .entities import Commodity, Equipment, Armor, ShieldGenerator, Thruster, Gun, Engine, Power, ShieldBattery, \
     CounterMeasure, CounterMeasureDropper, Scanner, Tractor, CargoPod, CloakingDevice, RepairKit, Mine, MineDropper, \
-    Munition
+    Munition, Explosion
 from .entities import Ship
 from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
@@ -92,12 +92,13 @@ def get_equipment() -> EntitySet[Equipment]:
         'repairkit': RepairKit,
         'shieldbattery': ShieldBattery,
         'munition': Munition,
+        'explosion': Explosion,
     }
 
     def generate_entities():
         for section, contents in equipment:
             if section in {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield',
-                           'lod', 'motor', 'lootcrate', 'explosion'}:
+                           'lod', 'motor', 'lootcrate'}:
                 continue  # not really entities, see docstring for equipment.py
             if section in section_name_to_type:
                 try:
