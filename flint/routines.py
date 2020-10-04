@@ -25,6 +25,7 @@ from .entities import Commodity, Equipment, Armor, ShieldGenerator, Thruster, Gu
 from .entities import Ship
 from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
+from . import entities
 
 
 @cached
@@ -71,34 +72,15 @@ def get_goods() -> EntitySet[Good]:
 @cached
 def get_equipment() -> EntitySet[Equipment]:
     """All equipment defined in the game files."""
+    section_name_to_type = {name.lower(): globals()[name] for name in dir(entities) if name in globals()}
+    excluded_sections = {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield', 'lod', 'motor', 'lootcrate'}
+
     equipment = ini.parse(paths.inis['equipment'])
 
-    section_name_to_type = {
-        'thruster': Thruster,
-        'commodity': Commodity,
-        'gun': Gun,
-        'armor': Armor,
-        'engine': Engine,
-        'shieldgenerator': ShieldGenerator,
-        'power': Power,
-        'countermeasuredropper': CounterMeasureDropper,
-        'countermeasure': CounterMeasure,
-        'minedropper': MineDropper,
-        'mine': Mine,
-        'scanner': Scanner,
-        'tractor': Tractor,
-        'cargopod': CargoPod,
-        'cloakingdevice': CloakingDevice,
-        'repairkit': RepairKit,
-        'shieldbattery': ShieldBattery,
-        'munition': Munition,
-        'explosion': Explosion,
-    }
-
     def generate_entities():
+        """Convert equipment sections to entities."""
         for section, contents in equipment:
-            if section in {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield',
-                           'lod', 'motor', 'lootcrate'}:
+            if section in excluded_sections:
                 continue  # not really entities, see docstring for equipment.py
             if section in section_name_to_type:
                 try:
