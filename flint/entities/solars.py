@@ -7,6 +7,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, Optional, Union
 
+from dataclassy import dataclass
+
 from . import Entity
 from .. import maps
 from ..formats import dll
@@ -66,6 +68,7 @@ class Wreck(Object):
     loadout: str  # loot that is dropped upon being shot
 
 
+@dataclass(slots=False)
 class BaseSolar(Object):
     """The physical representation of a Base."""
     reputation: str  # the nickname of the group this base belongs to
@@ -109,6 +112,7 @@ class Star(Spheroid):
     star: str
 
 
+@dataclass(slots=False)
 class Planet(Spheroid):
     """A planet in a System."""
     spin: Tuple[float, float, float]
