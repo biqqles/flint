@@ -15,6 +15,7 @@ they do not exactly fit flint's entity model, and partly for the sake
 of simplicity in the first incarnation of equipment parsing.
 """
 from typing import Dict, Optional, Tuple, cast
+import math
 
 from . import Entity
 from .goods import Good, EquipmentGood
@@ -153,6 +154,7 @@ class Mine(Projectile):
     seek_dist: int
     top_speed: int
     acceleration: int
+    ammo_limit: int
 
     def explosion(self) -> Optional['Explosion']:
         """The Explosion triggered by this mine."""
@@ -166,6 +168,7 @@ class Munition(Projectile):
     energy_damage: int = 0
     requires_ammo: bool = True  # todo: not sure about this default
     weapon_type: Optional[str] = None  # present only for energy weapons
+    ammo_limit: int = math.inf
 
 
 class Explosion(Projectile):
@@ -211,6 +214,13 @@ class Scanner(Mountable):
 class CounterMeasure(Equipment):
     """A countermeasure that can be deployed against seeking missiles."""
     lifetime: float
+    range: int
+    diversion_pctg: float
+    ammo_limit: int = math.inf  # typically only NPC CMs have unlimited ammo
+
+    def effectiveness(self) -> float:
+        """The probability this countermeasure will defeat an incoming missile."""
+        return self.diversion_pctg / 100
 
 
 class CounterMeasureDropper(Weapon):
@@ -218,7 +228,7 @@ class CounterMeasureDropper(Weapon):
 
     def countermeasure(self) -> Optional['CounterMeasure']:
         """The CounterMeasure launched by this dropper."""
-        return routines.get_equipment.get(self.projectile_archetype)
+        return routines.get_equipment().get(self.projectile_archetype)
 
 
 class RepairKit(Equipment):
