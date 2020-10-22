@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fl-flint',  # distribution name
-    version='0.6',
+    version='0.7',
 
     author='biqqles',
     author_email='biqqles@protonmail.com',
@@ -26,10 +26,9 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Games/Entertainment',
         'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha'
+        'Development Status :: 4 - Beta'
     ],
 
     install_requires=open('requirements.txt').readlines(),
     python_requires='>=3.6',
 )
-
