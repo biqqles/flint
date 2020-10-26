@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Functions for working with Freelancer's system layouts and navmaps.
 """
-from typing import Any, Dict
+from typing import Any, Dict, Hashable, List
 from collections import namedtuple
 import math
 
@@ -49,7 +49,7 @@ def inter_system_route(from_system: 'System', to_system: 'System'):
 
 def intra_system_route(from_solar: 'Solar', to_solar: 'Solar'):
     """Find the shortest route between two solars in the same system."""
-    assert from_solar._system == to_solar._system
+    assert from_solar.system() == to_solar.system()
     raise NotImplementedError
 
 
@@ -60,37 +60,39 @@ def generate_universe_graph() -> Dict['System', Dict['System', int]]:
     return {s: {d: 1 for d in s.connections().values()} for s in routines.get_systems()}
 
 
-def dijkstra(graph: Dict[Any, Dict[Any, int]], start: Any, end: Any):
+def dijkstra(graph: Dict[Any, Dict[Any, int]], start: Hashable, end: Hashable) -> List[Hashable]:
     """An implementation of Dijkstra's algorithm using only builtin types.
 
-    `graph` is represented by a dictionary of nodes mapped to dictionaries of their connections with the weights of
-    those connections.
+     Returns the shortest path between `start` and `end` as a list of nodes in order. If no path exists, an empty list
+     will be returned.
 
-    Rather over-documented as I described this algorithm as part of the coursework I used this for.
-    Currently pretty basic - weight (i.e. the time to travel between the input and exit points of a system) is currently
-    not calculated."""
-    distances, predecessors = {}, {}
-    # the predecessors for a node are just the other nodes that lie on the shortest path from the starting point to that
-    # node. Set all distances to zero, and all predecessors to
-    for node in graph:
-        distances[node] = math.inf
-        predecessors[node] = None
+    `graph` is assumed to be a dictionary of the form {node: {connected_node: edge_weight}}."""
+    distances = {node: math.inf for node in graph}
+    predecessors = {}  # nodes that lie on a possible path
+
     distances[start] = 0  # distance from the start node is 0
-    to_check = list(graph)  # a list of nodes that need to be checked
+    to_check = set(graph)  # the set of nodes that need to be checked
+
     while to_check:  # While there are still nodes to check...
         closest = min(to_check, key=distances.get)  # find the closest node to the current node
-        to_check.remove(closest)  # it's been checked, so can be removed
-        for node, weight in graph[closest].items():
+        to_check.remove(closest)
+
+        for neighbour, weight in graph[closest].items():  # examine neighbours of closest node
+            if neighbour not in to_check:
+                continue
             new_distance = distances[closest] + weight
-            if new_distance < distances.get(node, math.inf):
-                distances[node] = new_distance
-                predecessors[node] = closest
-    path = [end]
+            if new_distance < distances[neighbour]:
+                distances[neighbour] = new_distance
+                predecessors[neighbour] = closest
+
     # now look through the predecessors to find the path
-    while start not in path:
-        path.append(predecessors[path[-1]])
-    path.reverse()  # reverse dictionary (so the start is first and end is last)
-    return path
+    path = [end]
+    while path[-1] is not start:
+        try:
+            path.append(predecessors[path[-1]])
+        except KeyError:  # no path exists
+            return []
+    return list(reversed(path))
 
 
 NAVMAP_X_LABELS = tuple(chr(x) for x in range(ord('A'), ord('H') + 1))
