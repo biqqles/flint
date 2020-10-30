@@ -7,12 +7,16 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Functions for working with Freelancer's system layouts and navmaps.
 """
-from typing import Any, Dict, Hashable, List
-from collections import namedtuple
+from typing import Dict, List, TypeVar
+from collections import namedtuple, defaultdict
+from functools import lru_cache
 import math
 
 from . import routines
 from . import cached
+
+Node = TypeVar('Node')
+Graph = Dict[Node, Dict[Node, float]]
 
 PosVector = namedtuple('pos', 'x y z')
 RotVector = namedtuple('rot', 'x y z')
@@ -50,6 +54,11 @@ def inter_system_route(from_system: 'System', to_system: 'System'):
 def intra_system_route(from_solar: 'Solar', to_solar: 'Solar'):
     """Find the shortest route between two solars in the same system."""
     assert from_solar.system() == to_solar.system()
+    return dijkstra(generate_system_graph(from_solar.system()), from_solar, to_solar)
+
+
+def inter_solar_route(from_solar: 'Solar', to_solar: 'Solar'):
+    """Find the shortest route between two solars."""
     raise NotImplementedError
 
 
@@ -60,12 +69,40 @@ def generate_universe_graph() -> Dict['System', Dict['System', int]]:
     return {s: {d: 1 for d in s.connections().values()} for s in routines.get_systems()}
 
 
-def dijkstra(graph: Dict[Any, Dict[Any, int]], start: Hashable, end: Hashable) -> List[Hashable]:
-    """An implementation of Dijkstra's algorithm using only builtin types.
+@lru_cache(maxsize=None)
+def generate_system_graph(system: 'System') -> Dict['Solar', Dict['Solar', int]]:
+    """Generate a graph of all systems and their connections."""
+    graph = defaultdict(dict)
 
+    lanes = system.lanes()
+    bases = system.bases()
+    jumps = system.jumps()
+
+    for lane in lanes:
+        first, last = lane[0], lane[-1]
+        connect(graph, first, last, distance(first, last) / DEFAULT_LANE_SPEED)  # todo: connect inter-lane if broken
+    lane_ends = set(graph.keys())
+
+    for base_or_jump in bases + jumps:
+        for ring in lane_ends:
+            connect(graph, base_or_jump, ring, distance(base_or_jump, ring) / DEFAULT_CRUISE_SPEED)
+    return graph
+
+
+def distance(a: 'Solar', b: 'Solar') -> float:
+    """Return the distance between two solars."""
+    return math.hypot(b.pos.x - a.pos.x, b.pos.z - a.pos.z)
+
+
+def connect(graph: Graph, a: 'Solar', b: 'Solar', weight: float):
+    """Bidirectionally connect two nodes `a` and `b` on the graph with weight `weight`."""
+    graph[a][b] = graph[b][a] = weight
+
+
+def dijkstra(graph: Graph, start: Node, end: Node) -> List[Node]:
+    """An implementation of Dijkstra's algorithm using only builtin types.
      Returns the shortest path between `start` and `end` as a list of nodes in order. If no path exists, an empty list
      will be returned.
-
     `graph` is assumed to be a dictionary of the form {node: {connected_node: edge_weight}}."""
     distances = {node: math.inf for node in graph}
     predecessors = {}  # nodes that lie on a possible path
