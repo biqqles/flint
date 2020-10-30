@@ -51,23 +51,33 @@ class System(Entity):
         """All stars in this system."""
         return self.contents().of_type(Star)
 
-    def connections(self) -> 'Dict[Jump, System]':
+    def jumps(self) -> 'EntitySet[Jump]':
+        """All jumps in this system."""
+        return self.contents().of_type(Jump)
+
+    def rings(self) -> 'EntitySet[TradeLaneRing]':
+        """All trade lane rings in this system."""
+        return self.contents().of_type(TradeLaneRing)
+
+    def connections(self) -> 'Dict[System, Jump]':
         """The connections this system has to other systems."""
         return {c: c.destination_system() for c in self.contents().of_type(Jump)}
 
     def lanes(self) -> 'List[List[TradeLaneRing]]':
         """Return a list of lists of rings, where each nested list represents a complete trade lane and contains each
         ring in that lane in order."""
-        rings = EntitySet(c for c in self.contents() if isinstance(c, TradeLaneRing))
-        lanes = {r: [] for r in rings if r.prev_ring is None}  # find rings which start a lane
-        # group remaining rings into one of these
-        for first_ring in lanes:
-            current_ring = first_ring
-            while current_ring:
-                current_ring = rings.get(current_ring.next_ring)
-                if current_ring:
-                    lanes[first_ring].append(current_ring)
-        return [[f, *r] for f, r in lanes.items()]  # flatten grouping dict into list of lists
+        rings = self.rings()
+        lanes = []
+
+        # bit inefficient, doesn't remove rings once placed in a lane. No easy way I can see to do this
+        # without copying the dict before iteration which mostly negates the purpose
+        for ring in filter(lambda r: not r.prev_ring, rings):
+            lane = [ring]
+            lanes.append(lane)
+            while ring.next_ring:
+                ring = rings[ring.next_ring]
+                lane.append(ring)
+        return lanes
 
     def region(self) -> str:
         """The name of the region this system is in, extracted from the infocard."""
