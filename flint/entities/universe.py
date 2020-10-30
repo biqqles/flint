@@ -61,7 +61,7 @@ class System(Entity):
 
     def connections(self) -> 'Dict[System, Jump]':
         """The connections this system has to other systems."""
-        return {c: c.destination_system() for c in self.contents().of_type(Jump)}
+        return {c.destination_system(): c for c in self.contents().of_type(Jump)}
 
     def lanes(self) -> 'List[List[TradeLaneRing]]':
         """Return a list of lists of rings, where each nested list represents a complete trade lane and contains each
