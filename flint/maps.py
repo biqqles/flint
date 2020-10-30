@@ -12,14 +12,15 @@ from collections import namedtuple, defaultdict
 from functools import lru_cache
 import math
 
-from . import routines
-from . import cached
-
 Node = TypeVar('Node')
 Graph = Dict[Node, Dict[Node, float]]
 
 PosVector = namedtuple('pos', 'x y z')
 RotVector = namedtuple('rot', 'x y z')
+
+from .entities import System, Solar
+from . import cached
+from . import routines
 
 
 def pos_to_sector(pos: PosVector, navmap_scale: float, divider='-', subdivider='/') -> str:
@@ -46,31 +47,31 @@ def pos_to_sector(pos: PosVector, navmap_scale: float, divider='-', subdivider='
     return divider.join(map(quantise, (pos.x, pos.z), (NAVMAP_X_LABELS, NAVMAP_Z_LABELS)))
 
 
-def inter_system_route(from_system: 'System', to_system: 'System'):
+def inter_system_route(from_system: System, to_system: System):
     """Find the shortest route (in terms of the number of systems) between two systems."""
     return dijkstra(generate_universe_graph(), from_system, to_system)
 
 
-def intra_system_route(from_solar: 'Solar', to_solar: 'Solar'):
+def intra_system_route(from_solar: Solar, to_solar: Solar):
     """Find the shortest route between two solars in the same system."""
     assert from_solar.system() == to_solar.system()
     return dijkstra(generate_system_graph(from_solar.system()), from_solar, to_solar)
 
 
-def inter_solar_route(from_solar: 'Solar', to_solar: 'Solar'):
+def inter_solar_route(from_solar: Solar, to_solar: Solar):
     """Find the shortest route between two solars."""
     raise NotImplementedError
 
 
 @cached
-def generate_universe_graph() -> Dict['System', Dict['System', int]]:
+def generate_universe_graph() -> Dict[System, Dict[System, int]]:
     """Generate a graph of all systems and their connections.
     Todo: calculate weight between system entrances and exits rather than using a simple placeholder."""
     return {s: {d: 1 for d in s.connections().values()} for s in routines.get_systems()}
 
 
 @lru_cache(maxsize=None)
-def generate_system_graph(system: 'System') -> Dict['Solar', Dict['Solar', int]]:
+def generate_system_graph(system: System) -> Dict[Solar, Dict[Solar, int]]:
     """Generate a graph of all systems and their connections."""
     graph = defaultdict(dict)
 
@@ -89,12 +90,12 @@ def generate_system_graph(system: 'System') -> Dict['Solar', Dict['Solar', int]]
     return graph
 
 
-def distance(a: 'Solar', b: 'Solar') -> float:
+def distance(a: Solar, b: Solar) -> float:
     """Return the distance between two solars."""
     return math.hypot(b.pos.x - a.pos.x, b.pos.z - a.pos.z)
 
 
-def connect(graph: Graph, a: 'Solar', b: 'Solar', weight: float):
+def connect(graph: Graph, a: Solar, b: Solar, weight: float):
     """Bidirectionally connect two nodes `a` and `b` on the graph with weight `weight`."""
     graph[a][b] = graph[b][a] = weight
 
