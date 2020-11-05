@@ -5,11 +5,11 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, cast
 
 from dataclassy import Internal
 
-from . import Entity
+from . import Entity, EntitySet
 from .. import paths
 from ..formats import utf
 
@@ -68,7 +68,7 @@ class CommodityGood(EquipmentGood):
 
     def commodity(self) -> 'Commodity':
         """The Commodity entity this good refers to."""
-        return self.equipment_()
+        return cast(Commodity, self.equipment_())
 
 
 class ShipHull(Good):
@@ -102,5 +102,11 @@ class ShipPackage(Good):
         ("addons")."""
         return self.hull_().price  # todo: include cost of addons
 
+    def equipment(self) -> EntitySet['Equipment']:
+        """The set of equipment included in this package."""
+        equipment = routines.get_equipment()
+        return EntitySet(equipment[n] for n,  *_ in self.addon if n in equipment)
+
 
 from .. import routines
+from .equipment import Equipment, Commodity
