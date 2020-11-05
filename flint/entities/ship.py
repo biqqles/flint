@@ -6,7 +6,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, List, Optional
-import math
+from statistics import mean
 
 from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
@@ -75,12 +75,38 @@ class Ship(Entity):
         return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
     def turn_rate(self) -> float:
-        """The maximum turn rate (i.e. angular speed) of this ship in degrees per second.
-        TODO: this is inaccurate for vectors with unequal elements but is *reasonably* accurate for now."""
+        """The maximum turn rate (i.e. angular speed) of this ship. in rad/s.
+        TODO: This is inaccurate for vectors with unequal elements but is *reasonably* accurate for now.
+              The following functions are similarly inaccurate approximations."""
         try:
-            return math.degrees(min(self.steering_torque) / min(self.angular_drag))
+            return min(self.steering_torque) / min(self.angular_drag)
         except TypeError:
             return 0
+
+    def drag_torque(self, speed: float) -> float:
+        """The ship's resistive "drag" torque as a function of speed, in Nm (?)."""
+        try:
+            return 0.5 * mean(self.angular_drag) * speed**2
+        except TypeError:
+            return 0
+
+    def net_steering_torque(self, speed: float):
+        """The ship's net torque imparted by the steering system, taking into account resistive torque, in Nm (?)."""
+        try:
+            return mean(self.steering_torque) - self.drag_torque(speed)
+        except TypeError:
+            return 0
+
+    def angular_acceleration(self, speed: float):
+        """The ship's maximum angular acceleration (rad/s^2)."""
+        try:
+            return self.net_steering_torque(speed) / mean(self.rotation_inertia)
+        except TypeError:
+            return 0
+
+    def angular_distance_in_time(self, time=1):
+        """The ship's maximum angular acceleration (rad/s^2)."""
+        return 0.5 * self.angular_acceleration(speed=0.05) * time**2
 
     def equipment(self) -> EntitySet[Equipment]:
         """The set of this ship package's equipment upon purchase."""
@@ -96,22 +122,29 @@ class Ship(Entity):
         return self.equipment().of_type(Engine).first
 
     def impulse_speed(self) -> float:
-        """The maximum forward impulse (non-cruise) speed of this ship."""
+        """The maximum forward impulse (non-cruise) speed of this ship (m/s)."""
         engine = self.engine()
-        if not engine:
-            return 0
-        try:
-            return engine.max_force / (engine.linear_drag + self.linear_drag)
-        except TypeError:
-            return 0
+        return self.linear_speed(engine.max_force) if engine else 0
 
     def reverse_speed(self) -> float:
-        """The maximum reverse speed of this ship."""
+        """The maximum reverse speed of this ship (m/s)."""
         engine = self.engine()
         return self.impulse_speed() * engine.reverse_fraction if engine else 0
 
+    def linear_speed(self, force: float) -> float:
+        """The maximum speed of this ship for a given force, in m/s."""
+        return force / self.total_linear_drag()
+
+    def total_linear_drag(self) -> float:
+        """The total linear resistive force for this ship and engine, in N (?)."""
+        engine = self.engine()
+        try:
+            return engine.linear_drag + self.linear_drag if engine else self.linear_drag
+        except TypeError:
+            return 1
+
     def cruise_charge_time(self):
-        """The time taken to charge this ship's cruise engine."""
+        """The time taken to charge this ship's cruise engine, in seconds."""
         engine = self.engine()
         return engine.cruise_charge_time if engine else 0
 
