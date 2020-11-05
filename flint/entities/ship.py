@@ -7,7 +7,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, List, Optional
 import math
-from statistics import mean
 
 from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
@@ -75,6 +74,14 @@ class Ship(Entity):
         """The name of the type (class) of this ship."""
         return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
+    def turn_rate(self) -> float:
+        """The maximum turn rate (i.e. angular speed) of this ship in degrees per second.
+        TODO: this is inaccurate for vectors with unequal elements but is *reasonably* accurate for now."""
+        try:
+            return math.degrees(min(self.steering_torque) / min(self.angular_drag))
+        except TypeError:
+            return 0
+
     def equipment(self) -> EntitySet[Equipment]:
         """The set of this ship package's equipment upon purchase."""
         package = self.package()
@@ -101,12 +108,12 @@ class Ship(Entity):
     def reverse_speed(self) -> float:
         """The maximum reverse speed of this ship."""
         engine = self.engine()
-        return self.impulse_speed() * self.engine().reverse_fraction if engine else 0
+        return self.impulse_speed() * engine.reverse_fraction if engine else 0
 
     def cruise_charge_time(self):
         """The time taken to charge this ship's cruise engine."""
         engine = self.engine()
-        return self.engine().cruise_charge_time if engine else 0
+        return engine.cruise_charge_time if engine else 0
 
     TYPE_ID_TO_NAME = {0: 'Light Fighter',
                        1: 'Heavy Fighter',
