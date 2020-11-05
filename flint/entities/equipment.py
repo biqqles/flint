@@ -18,7 +18,6 @@ from typing import Dict, Optional, Tuple, cast
 import math
 
 from . import Entity
-from .goods import Good, EquipmentGood
 from .. import routines
 
 
@@ -30,7 +29,7 @@ class Equipment(Entity):
         """This equipment's icon in TGA format."""
         return self.good().icon()
 
-    def good(self) -> Optional[Good]:
+    def good(self) -> Optional['Good']:
         """The good entity for this piece of equipment."""
         return routines.get_goods().of_type(EquipmentGood).unique(equipment=self.nickname)
 
@@ -242,7 +241,11 @@ class ShieldBattery(Equipment):
 # equipment typically defined in engine_equip.ini
 class Engine(Mountable):
     """A reaction engine that must be mounted to a ship to provide propulsion."""
-
+    cruise_charge_time: int
+    reverse_fraction: float
+    linear_drag: float
+    max_force: float
+    
 
 # equipment typically defined in select_equip.ini
 class Armor(Mountable):
@@ -269,3 +272,6 @@ class Commodity(Equipment):
     def bought_at(self) -> Dict['Base', int]:
         """A dict of bases that buy this commodity of the form {base: price}."""
         return self.good().bought_at()
+
+
+from .goods import Good, EquipmentGood
