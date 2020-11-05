@@ -9,8 +9,9 @@ from typing import Tuple, List, Optional
 import math
 from statistics import mean
 
-from . import Entity
+from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
+from .equipment import Equipment, Power, Engine
 from ..formats import dll
 from .. import routines
 
@@ -23,10 +24,13 @@ class Ship(Entity):
     ship_class: int
     hit_pts: int
     hold_size: int
+    mass: int
+    linear_drag: int
     nanobot_limit: int = 0
     shield_battery_limit: int = 0
     steering_torque: Tuple[float, float, float]
     angular_drag: Tuple[float, float, float]
+    rotation_inertia: Tuple[float, float, float]
 
     def hull(self) -> Optional[ShipHull]:
         """This ship's hull entity."""
@@ -71,13 +75,38 @@ class Ship(Entity):
         """The name of the type (class) of this ship."""
         return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
-    def turn_rate(self) -> float:
-        """Turn rate in degrees per second."""
-        return math.degrees(mean(self.steering_torque) / (mean(self.angular_drag) or math.inf))
+    def equipment(self) -> EntitySet[Equipment]:
+        """The set of this ship package's equipment upon purchase."""
+        package = self.package()
+        return package.equipment() if package else EntitySet([])
 
-    def hardpoints(self) -> List[str]:
-        """A list of this ship's hardpoints todo out of the box"""
-        return self.package().addon
+    def power_core(self) -> Power:
+        """The Power entity for this ship."""
+        return self.equipment().of_type(Power).first
+
+    def engine(self) -> Engine:
+        """The Power entity for this ship."""
+        return self.equipment().of_type(Engine).first
+
+    def impulse_speed(self) -> float:
+        """The maximum forward impulse (non-cruise) speed of this ship."""
+        engine = self.engine()
+        if not engine:
+            return 0
+        try:
+            return engine.max_force / (engine.linear_drag + self.linear_drag)
+        except TypeError:
+            return 0
+
+    def reverse_speed(self) -> float:
+        """The maximum reverse speed of this ship."""
+        engine = self.engine()
+        return self.impulse_speed() * self.engine().reverse_fraction if engine else 0
+
+    def cruise_charge_time(self):
+        """The time taken to charge this ship's cruise engine."""
+        engine = self.engine()
+        return self.engine().cruise_charge_time if engine else 0
 
     TYPE_ID_TO_NAME = {0: 'Light Fighter',
                        1: 'Heavy Fighter',
