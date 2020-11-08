@@ -70,16 +70,15 @@ class Ship(Entity):
             raise ValueError
         return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info)))
 
-    def type(self) -> str:
+    def type(self) -> Optional[str]:
         """The name of the type (class) of this ship."""
         return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
     def turn_rate(self) -> float:
-        """The maximum turn rate (i.e. angular speed) of this ship. in rad/s.
-        TODO: This is inaccurate for vectors with unequal elements but is *reasonably* accurate for now.
-              The following functions are similarly inaccurate approximations."""
+        """The maximum turn rate (i.e. angular speed) of this ship, in rad/s.
+        TODO: The following functions are currently inaccurate approximations."""
         try:
-            return min(self.steering_torque) / min(self.angular_drag)
+            return self.steering_torque[0] / self.angular_drag[0]
         except TypeError:
             return 0
 
@@ -113,11 +112,11 @@ class Ship(Entity):
         package = self.package()
         return package.equipment() if package else EntitySet([])
 
-    def power_core(self) -> Power:
+    def power_core(self) -> Optional[Power]:
         """The Power entity for this ship."""
         return self.equipment().of_type(Power).first
 
-    def engine(self) -> Engine:
+    def engine(self) -> Optional[Engine]:
         """The Power entity for this ship."""
         return self.equipment().of_type(Engine).first
 
