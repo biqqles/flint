@@ -6,13 +6,16 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, List, Optional
-from statistics import mean
+import math
 
 from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
 from .equipment import Equipment, Power, Engine
 from ..formats import dll
 from .. import routines
+
+
+LOG_OF_E = math.log10(math.e)  # used to approximate angular acceleration curve
 
 
 class Ship(Entity):
@@ -106,6 +109,11 @@ class Ship(Entity):
     def angular_distance_in_time(self, time=1):
         """The ship's maximum angular acceleration (rad/s^2)."""
         return 0.5 * self.angular_acceleration(speed=0.05) * time**2
+
+    def response(self) -> float:
+        """The "response time" is defined as the time to reach 90% maximum angular speed (in seconds).
+        Thanks to Haste for this formula."""
+        return self.rotation_inertia[0] / (self.angular_drag[0] * LOG_OF_E)
 
     def equipment(self) -> EntitySet[Equipment]:
         """The set of this ship package's equipment upon purchase."""
