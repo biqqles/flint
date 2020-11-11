@@ -78,37 +78,14 @@ class Ship(Entity):
         return self.TYPE_ID_TO_NAME.get(self.ship_class)
 
     def turn_rate(self) -> float:
-        """The maximum turn rate (i.e. angular speed) of this ship, in rad/s.
-        TODO: The following functions are currently inaccurate approximations."""
-        try:
-            return self.steering_torque[0] / self.angular_drag[0]
-        except TypeError:
-            return 0
+        """The maximum turn rate (i.e. angular speed) of this ship, in rad/s."""
+        return self.steering_torque[0] / self.angular_drag[0]
 
-    def drag_torque(self, speed: float) -> float:
-        """The ship's resistive "drag" torque as a function of speed, in Nm (?)."""
-        try:
-            return 0.5 * mean(self.angular_drag) * speed**2
-        except TypeError:
-            return 0
-
-    def net_steering_torque(self, speed: float):
-        """The ship's net torque imparted by the steering system, taking into account resistive torque, in Nm (?)."""
-        try:
-            return mean(self.steering_torque) - self.drag_torque(speed)
-        except TypeError:
-            return 0
-
-    def angular_acceleration(self, speed: float):
-        """The ship's maximum angular acceleration (rad/s^2)."""
-        try:
-            return self.net_steering_torque(speed) / mean(self.rotation_inertia)
-        except TypeError:
-            return 0
-
-    def angular_distance_in_time(self, time=1):
-        """The ship's maximum angular acceleration (rad/s^2)."""
-        return 0.5 * self.angular_acceleration(speed=0.05) * time**2
+    def angular_distance_in_time(self, time=1) -> float:
+        """The angular displacement in radians from rest to `time` (in seconds).
+        TODO: Currently only an approximation. I believe this formula is correct but there has to be a more accurate
+               way to calculate acceleration."""
+        return 0.5 * (self.turn_rate() / self.response()) * time**2
 
     def response(self) -> float:
         """The "response time" is defined as the time to reach 90% maximum angular speed (in seconds).
