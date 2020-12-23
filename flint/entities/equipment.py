@@ -137,6 +137,15 @@ class Gun(Weapon):
         """Whether the gun is valid, i.e. it defines a good and a munition."""
         return super().is_valid() and (self.munition() is not None)
 
+    def is_missile(self) -> bool:
+        """Whether the gun is a missile/torpedo launcher. Another, much slower, way to test this would be to check
+        if the gun's munition has a "motor" field."""
+        return bool(self.dry_fire_sound)
+
+    def is_turret(self) -> bool:
+        """Whether the gun is a turret."""
+        return self.auto_turret or (self.hp_gun_type and 'turret' in self.hp_gun_type)
+
 
 class MineDropper(Weapon):
     """A dispenser for mines."""
