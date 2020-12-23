@@ -13,6 +13,12 @@ files. These include Lod, TradeLane, InternalFX, AttachedFX, Explosion,
 Light, Motor, LootCrate, and Shield. Currently these are excluded as
 they do not exactly fit flint's entity model, and partly for the sake
 of simplicity in the first incarnation of equipment parsing.
+
+Because of the sheer number of classes in this file, apart from abstract
+classes they currently have a 1-1 mapping with INI section types to
+simplify and optimise instantiation logic. So, for example, subtypes of
+Gun could be Missile and Turret, but instead you should determine if a
+Gun instance is one of these by checking its attributes.
 """
 from typing import Dict, Optional, Tuple, cast
 import math
@@ -22,7 +28,7 @@ from .. import routines
 
 
 class Equipment(Entity):
-    """Something which can be mounted on a ship or carried in its hold."""
+    """Abstract class for something which can be mounted on a ship or carried in its hold."""
     lootable: bool = False
 
     def icon(self) -> bytes:
@@ -40,6 +46,11 @@ class Equipment(Entity):
     def price(self) -> int:
         """The default price of this equipment."""
         return self.good().price if self.good() else 0
+
+    def is_valid(self) -> bool:
+        """Whether the equipment is valid, i.e. it defines a good. Note that some specialised equipment subtypes
+        do not have goods, rendering this method meaningless for them."""
+        return self.good() is not None
 
 
 class Mountable(Equipment):
@@ -83,6 +94,8 @@ class Gun(Weapon):
     projectile_archetype: str
     hp_gun_type: Optional[str] = None  # NPC guns lack this field
     dispersion_angle: float = 0.0
+    dry_fire_sound: Optional[str] = None  # only missiles (and mine droppers, but they're a different class) have this
+    auto_turret: bool  # only turrets have this
 
     def munition(self) -> Optional['Munition']:
         """The Munition fired by this weapon."""
@@ -119,6 +132,10 @@ class Gun(Weapon):
     def range(self) -> int:
         """The range this weapon can shoot to."""
         return int(self.muzzle_velocity * self.munition().lifetime)
+
+    def is_valid(self) -> bool:
+        """Whether the gun is valid, i.e. it defines a good and a munition."""
+        return super().is_valid() and (self.munition() is not None)
 
 
 class MineDropper(Weapon):
