@@ -53,7 +53,8 @@ class Jump(Object):
 
     def destination_system(self) -> 'System':
         """The system this wormhole ends in."""
-        return routines.get_systems()[self.goto[0]]
+        destination = self.goto[-1][0] if isinstance(self.goto, list) else self.goto[0]
+        return routines.get_systems()[destination]
 
 
 class TradeLaneRing(Object):
