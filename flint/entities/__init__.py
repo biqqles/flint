@@ -19,7 +19,7 @@ from dataclassy import dataclass
 from ..formats import dll
 
 
-@dataclass(kwargs=True, frozen=True, slots=True)
+@dataclass(kwargs=True, slots=True)
 class Entity:
     """
     The base data class for any entity defined within Freelancer, distinguished by a nickname.
