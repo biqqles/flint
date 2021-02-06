@@ -164,7 +164,8 @@ def get_markets() -> Dict[Union[Base, Good], Dict[bool, Dict[Union[Good, Base], 
     result = defaultdict(lambda: {True: {}, False: {}})
     for b in market:
         try:
-            base_entity = bases[b['base'][0]]
+            base = b['base'][0]
+            base_entity = bases[base]
         except IndexError:
             warnings.warn('BaseGood has no base')
             continue
@@ -176,7 +177,7 @@ def get_markets() -> Dict[Union[Base, Good], Dict[bool, Dict[Union[Good, Base], 
             try:
                 good_entity = goods[good]
             except KeyError:
-                warnings.warn(f'BaseGood refers to undefined good: {good!r}')
+                warnings.warn(f'BaseGood for base {base!r} refers to undefined good: {good!r}')
                 continue
             sold = not (min_stock == 0 or max_stock == 0)
             price_at_base = int(round(good_entity.price * multiplier))
