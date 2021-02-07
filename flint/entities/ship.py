@@ -83,9 +83,8 @@ class Ship(Entity):
 
     def angular_distance_in_time(self, time=1) -> float:
         """The angular displacement in radians from rest to `time` (in seconds).
-        TODO: Currently only an approximation. I believe this formula is correct but there has to be a more accurate
-               way to calculate acceleration."""
-        return 0.5 * (self.turn_rate() / self.response()) * time**2
+        TODO: Currently only an approximation."""
+        return self.turn_rate() / self.response()
 
     def response(self) -> float:
         """The "response time" is defined as the time to reach 90% maximum angular speed (in seconds).
