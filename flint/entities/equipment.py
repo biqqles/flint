@@ -103,11 +103,11 @@ class Gun(Weapon):
 
     def hull_damage(self) -> float:
         """Hull damage dealt per shot."""
-        return self.munition().hull_damage
+        return self.munition().hull_damage_()
 
     def shield_damage(self) -> float:
         """Shield damage dealt per shot."""
-        return self.munition().energy_damage
+        return self.munition().energy_damage_()
 
     def hull_dps(self) -> float:
         """Hull damage dealt per second."""
@@ -140,11 +140,11 @@ class Gun(Weapon):
     def is_missile(self) -> bool:
         """Whether the gun is a missile/torpedo launcher. Another, much slower, way to test this would be to check
         if the gun's munition has a "motor" field."""
-        return bool(self.dry_fire_sound)
+        return bool(self.dry_fire_sound) or self.munition().cruise_disruptor is not None or 'Torpedo' in self.name()
 
     def is_turret(self) -> bool:
         """Whether the gun is a turret."""
-        return self.auto_turret or (self.hp_gun_type and 'turret' in self.hp_gun_type)
+        return self.auto_turret or (self.hp_gun_type and 'turret' in self.hp_gun_type) or 'Turret' in self.name()
 
 
 class MineDropper(Weapon):
@@ -194,6 +194,38 @@ class Munition(Projectile):
     requires_ammo: bool = True  # todo: not sure about this default
     weapon_type: Optional[str] = None  # present only for energy weapons
     ammo_limit: int = math.inf
+    explosion_arch: Optional[str] = None  # nickname of Explosion
+    cruise_disruptor: Optional[bool] = None  # only set for missiles
+    motor: Optional[str] = None  # only set for missiles
+    seeker: Optional[str] = None
+
+    def explosion(self) -> Optional['Explosion']:
+        """The Explosion triggered by this munition."""
+        return routines.get_equipment().get(self.explosion_arch) if self.explosion_arch else None
+
+    def hull_damage_(self) -> int:
+        """The hull damage inflicted by this munition, taking into consideration its explosion."""
+        try:
+            return self.hull_damage or self.explosion().hull_damage
+        except AttributeError:
+            return 0
+
+    def energy_damage_(self) -> int:
+        """The shield damage inflicted by this munition, taking into consideration its explosion."""
+        try:
+            return self.energy_damage or self.explosion().energy_damage
+        except AttributeError:
+            return 0
+
+    def motor_(self) -> Optional['Motor']:
+        """This Munition's Motor."""
+        return routines.get_equipment().get(self.motor) if self.motor else None
+
+
+class Motor(Projectile):
+    """A missile motor."""
+    accel: int
+    delay: int
 
 
 class Explosion(Projectile):

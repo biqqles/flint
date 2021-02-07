@@ -21,7 +21,7 @@ from .entities import EntitySet
 from .entities import Good, EquipmentGood, CommodityGood, ShipHull, ShipPackage
 from .entities import Commodity, Equipment, Armor, ShieldGenerator, Thruster, Gun, Engine, Power, ShieldBattery, \
     CounterMeasure, CounterMeasureDropper, Scanner, Tractor, CargoPod, CloakingDevice, RepairKit, Mine, MineDropper, \
-    Munition, Explosion
+    Munition, Explosion, Motor
 from .entities import Ship
 from .entities import Base, System, Faction
 from .entities import Solar, Object, Jump, BaseSolar, Star, Planet, PlanetaryBase, TradeLaneRing, Wreck, Zone
@@ -73,7 +73,7 @@ def get_goods() -> EntitySet[Good]:
 def get_equipment() -> EntitySet[Equipment]:
     """All equipment defined in the game files."""
     section_name_to_type = {name.lower(): globals()[name] for name in dir(entities) if name in globals()}
-    excluded_sections = {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield', 'lod', 'motor', 'lootcrate'}
+    excluded_sections = {'light', 'tradelane', 'internalfx', 'attachedfx', 'shield', 'lod', 'lootcrate'}
 
     equipment = ini.parse(paths.inis['equipment'])
 
