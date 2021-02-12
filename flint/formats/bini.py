@@ -96,7 +96,6 @@ def dump(path: str) -> str:
 
 def is_bini(path: str) -> bool:
     """Returns whether the (.ini) file at `path` is a BINI by checking its magic number."""
-    assert isfile(path)
     with open(path, 'rb') as f:
         data = f.read(4)
     return data[:4] == b'BINI'
