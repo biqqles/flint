@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fl-flint',  # distribution name
-    version='0.8',
+    version='0.8.1',
 
     author='biqqles',
     author_email='biqqles@protonmail.com',
