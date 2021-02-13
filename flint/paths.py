@@ -7,25 +7,31 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 This module provides utilities for working with Freelancer's paths.
 """
+from typing import Dict, Tuple, Optional
 import os
-from typing import Dict, Tuple
 
 from .formats import ini
 from . import cached
 
-install: str
+install: Optional[str] = None
 inis: Dict[str, Tuple[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
 dlls: Dict[int, str] = {}  # dll number to path
 
 
 def set_install_path(new_path, discovery=False):
-    """Lists the path to the installation"""
+    """Set the path to the installation"""
     global install
     if not os.path.exists(new_path):
         raise FileNotFoundError(new_path)
     assert is_probably_freelancer(new_path, discovery)
     install = new_path
     generate_index()
+
+
+def install_path_set() -> bool:
+    """Whether an install path has been set (see `set_install_path`)."""
+    print(install is not None)
+    return install is not None
 
 
 @cached

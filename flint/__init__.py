@@ -28,7 +28,7 @@ def cached(function):
     return wrapped
 
 
-from . import paths
+from .paths import set_install_path, install_path_set
 from .routines import get_commodities, get_bases, get_equipment, get_ships, get_systems, get_factions, get_goods
 
 
@@ -41,10 +41,10 @@ shorthand = {'bases': get_bases,
              'systems': get_systems}
 
 
-# shorthand for Python 3.7 and up
 def __getattr__(name):
-    if not paths.install:
-        raise AssertionError('No path set')
+    """Implement shorthand (property-like syntax) for Python 3.7 and up. This function is only called if a name
+    cannot be resolved directly."""
     if name in shorthand:
+        assert install_path_set(), 'No game path set'
         return shorthand[name]()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
