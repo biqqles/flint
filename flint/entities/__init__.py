@@ -9,7 +9,7 @@ This namespace contains definitions for entities found within
 Freelancer.
 """
 from typing import TypeVar, Iterable, Generic, Type, Optional, Dict, Union
-from collections.abc import Mapping
+from collections.abc import Mapping, KeysView, ItemsView
 from functools import lru_cache
 import operator
 import pprint
@@ -119,6 +119,14 @@ class EntitySet(Mapping, Generic[T]):
     def __iadd__(self, other) -> 'EntitySet[T]':
         """An EntitySet can be extended."""
         return self + other
+
+    def keys(self) -> KeysView:
+        """The nicknames of all entities in this set."""
+        return self._map.keys()
+
+    def items(self) -> ItemsView:
+        """All entities in this set."""
+        return self._map.items()
 
     @lru_cache(maxsize=256)
     def of_type(self, type_: Type[F]) -> 'EntitySet[F]':
