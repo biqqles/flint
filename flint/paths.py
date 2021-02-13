@@ -30,7 +30,6 @@ def set_install_path(new_path, discovery=False):
 
 def install_path_set() -> bool:
     """Whether an install path has been set (see `set_install_path`)."""
-    print(install is not None)
     return install is not None
 
 
