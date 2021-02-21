@@ -5,7 +5,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict
 import math
 
 from . import Entity, EntitySet
@@ -33,6 +33,7 @@ class Ship(Entity):
     steering_torque: Tuple[float, float, float]
     angular_drag: Tuple[float, float, float]
     rotation_inertia: Tuple[float, float, float]
+    hp_type: List[Tuple[str, ...]] = []
 
     def hull(self) -> Optional[ShipHull]:
         """This ship's hull entity."""
@@ -130,6 +131,14 @@ class Ship(Entity):
         """The time taken to charge this ship's cruise engine, in seconds."""
         engine = self.engine()
         return engine.cruise_charge_time if engine else 0
+
+    def hardpoints(self) -> Dict[str, List[str]]:
+        """A mapping of this ship's hardpoints of the form {hardpoint nickname -> [weapon classes]}."""
+        result = {}
+        for hp_class, *hardpoints in self.hp_type:
+            for hp in hardpoints:
+                result.setdefault(hp, []).append(hp_class)
+        return result
 
     TYPE_ID_TO_NAME = {0: 'Light Fighter',
                        1: 'Heavy Fighter',
