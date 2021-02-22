@@ -90,8 +90,10 @@ def generate_index():
 
     root = parsed['freelancer'][0]  # todo: also look at 'data path'
     resources = parsed['resources'][0]['dll']
+    resources.insert(0, 'resources.dll')  # hardcoded as DLL 0
+
     data = parsed['data'][0]
     data.update(root)
 
-    dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources, 1)})  # dll 0 is Freelancer.exe itself
+    dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources)})
     inis.update({category: tuple(construct_path('DATA', f) for f in files) for category, files in data.items()})
