@@ -20,10 +20,10 @@ LOG_OF_E = math.log10(math.e)  # used to approximate angular acceleration curve
 
 class Ship(Entity):
     """A starship with a cargo bay and possibly hardpoints for weapons."""
-    ids_info1: int  # ship description (ids_info stores statistics)
-    ids_info2: int  # extra stat names list
-    ids_info3: int  # extra stat values list
-    ship_class: int
+    ids_info1: Optional[int] = None  # ship description (ids_info stores statistics)
+    ids_info2: Optional[int] = None  # extra stat names list
+    ids_info3: Optional[int] = None  # extra stat values list
+    ship_class: int = 0
     hit_pts: int
     hold_size: int
     mass: int
