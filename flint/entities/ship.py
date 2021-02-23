@@ -6,6 +6,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 from typing import Tuple, List, Optional, Dict
+import os
 import math
 
 from . import Entity, EntitySet
@@ -74,9 +75,9 @@ class Ship(Entity):
             raise ValueError
         return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info)))
 
-    def type(self) -> Optional[str]:
+    def type(self) -> str:
         """The name of the type (class) of this ship."""
-        return self.TYPE_ID_TO_NAME.get(self.ship_class)
+        return self._ship_classes()[self.ship_class]
 
     def turn_rate(self) -> float:
         """The maximum turn rate (i.e. angular speed) of this ship, in rad/s."""
@@ -140,24 +141,16 @@ class Ship(Entity):
                 result.setdefault(hp, []).append(hp_class)
         return result
 
-    TYPE_ID_TO_NAME = {0: 'Light Fighter',
-                       1: 'Heavy Fighter',
-                       2: 'Freighter',
-                       # Discovery:
-                       3: 'Very Heavy Fighter',
-                       4: 'Super Heavy Fighter',
-                       5: 'Bomber',
-                       6: 'Transport',  # more specifically;
-                       7: 'Transport',  # trains
-                       8: 'Transport',  # battle-transports
-                       9: 'Transport',
-                       10: 'Transport',  # liners.
-                       11: 'Gunboat',  # gunships
-                       12: 'Gunboat',
-                       13: 'Cruiser',  # destroyers
-                       14: 'Cruiser',
-                       15: 'Cruiser',  # battlecruisers
-                       16: 'Battleship',
-                       17: 'Battleship',  # carriers
-                       18: 'Battleship',  # flagships
-                       19: 'Freighter'}  # repair ships
+    @staticmethod
+    @cached
+    def _ship_classes() -> List[str]:
+        """Construct an array of ship type codes to their display names."""
+        # vanilla classes: Light Fighter - VHF
+        result = list(map(dll.lookup, range(923, 927)))
+
+        # further classes can be provided by mods using adoxa's shipclass plugin
+        ship_class = paths.construct_path('EXE/shipclass.dll')
+        if os.path.exists(ship_class):
+            result.extend(dll.parse(ship_class, 0).values())
+
+        return result
