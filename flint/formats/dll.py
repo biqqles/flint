@@ -60,7 +60,7 @@ def lookup_as_plain(resource_id: int) -> str:
     return rdl_to_plaintext(lookup(resource_id))
 
 
-def parse(path: str, external_strid_offset: int) -> Dict[int, str]:
+def parse(path: str, external_strid_offset: int = 0) -> Dict[int, str]:
     """Read the DLL at the given path into a mapping of external ids to string/XML resources.
     Format reference: <https://docs.microsoft.com/en-gb/windows/win32/debug/pe-format>"""
 
