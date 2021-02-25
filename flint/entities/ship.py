@@ -13,7 +13,7 @@ from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
 from .equipment import Equipment, Power, Engine
 from ..formats import dll
-from .. import routines
+from .. import routines, cached, paths
 
 
 LOG_OF_E = math.log10(math.e)  # used to approximate angular acceleration curve

@@ -88,11 +88,10 @@ def generate_index():
     freelancer_ini = os.path.join(install, 'EXE/freelancer.ini')
     parsed = ini.sections(freelancer_ini, fold_values=False)
 
-    root = parsed['freelancer'][0]  # todo: also look at 'data path'
-    resources = parsed['resources'][0]['dll']
-    resources.insert(0, 'resources.dll')  # hardcoded as DLL 0
+    resources = ['resources.dll', *parsed['resources'][0]['dll']]  # resources.dll is hardcoded as DLL 0
 
     data = parsed['data'][0]
+    root = parsed['freelancer'][0]  # todo: also look at 'data path'
     data.update(root)
 
     dlls.update({i: construct_path('EXE', f) for i, f in enumerate(resources)})
