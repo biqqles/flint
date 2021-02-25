@@ -55,7 +55,7 @@ class Ship(Entity):
     def price(self) -> int:
         """The price of this ship's hull."""
         try:
-            return self.hull().price
+            return self.package().cost()
         except AttributeError:
             return 0
 

@@ -100,12 +100,12 @@ class ShipPackage(Good):
         """The cost of this ship package when bought. Note that this is distinct from Good's _price_, which ShipPackage
         lacks. Instead a ship's cost at the vendor is the sum of the prices of its hull and default equipment
         ("addons")."""
-        return self.hull_().price  # todo: include cost of addons
+        return self.hull_().price + sum(e.price() for e in self.equipment())
 
     def equipment(self) -> EntitySet['Equipment']:
         """The set of equipment included in this package."""
         equipment = routines.get_equipment()
-        return EntitySet(equipment[n] for n,  *_ in self.addon if n in equipment)
+        return EntitySet(equipment[n] for n, *_ in self.addon if n in equipment)
 
 
 from .. import routines
