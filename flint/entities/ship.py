@@ -65,14 +65,7 @@ class Ship(Entity):
 
     def infocard(self, markup='html') -> str:
         """I have no idea why the order these are displayed in is not ascending, but anyway."""
-        if markup == 'html':
-            lookup = dll.lookup_as_html
-        elif markup == 'plain':
-            lookup = dll.lookup_as_plain
-        elif markup == 'rdl':
-            lookup = dll.lookup
-        else:
-            raise ValueError
+        lookup = self._markup_formats[markup]
         return '<p>'.join(map(lookup, (self.ids_info1, self.ids_info)))
 
     def type(self) -> str:

@@ -86,14 +86,7 @@ class BaseSolar(Object):
     def infocard(self, markup='html') -> str:
         """Base infocards are actually in two parts, with ids_info referring to the specs of a base and ids_info + 1
         storing the actual description"""
-        if markup == 'html':
-            lookup = dll.lookup_as_html
-        elif markup == 'plain':
-            lookup = dll.lookup_as_plain
-        elif markup == 'rdl':
-            lookup = dll.lookup
-        else:
-            raise ValueError
+        lookup = self._markup_formats[markup]
 
         specifications = lookup(self.ids_info)
         try:

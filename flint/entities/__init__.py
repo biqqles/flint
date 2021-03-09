@@ -48,14 +48,7 @@ class Entity:
 
     def infocard(self, markup='html') -> str:
         """The infocard for this entity, formatted in the markup language (`rdl`, `html` or `plain`) specified."""
-        if markup == 'html':
-            lookup = dll.lookup_as_html
-        elif markup == 'plain':
-            lookup = dll.lookup_as_plain
-        elif markup == 'rdl':
-            lookup = dll.lookup
-        else:
-            raise ValueError
+        lookup = self._markup_formats[markup]
         return lookup(self.ids_info)
 
     def __hash__(self) -> int:
@@ -63,6 +56,8 @@ class Entity:
 
     def __eq__(self, other) -> bool:
         return self.nickname == other.nickname
+
+    _markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
 
 
 T = TypeVar('T')
