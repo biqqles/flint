@@ -11,7 +11,6 @@ from dataclassy import dataclass
 
 from . import Entity
 from .. import maps
-from ..formats import dll
 
 
 class Solar(Entity):
