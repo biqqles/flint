@@ -9,6 +9,8 @@ from typing import Tuple, List, Optional, Dict
 import os
 import math
 
+from dataclassy import dataclass
+
 from . import Entity, EntitySet
 from .goods import ShipHull, ShipPackage
 from .equipment import Equipment, Power, Engine
@@ -126,12 +128,13 @@ class Ship(Entity):
         engine = self.engine()
         return engine.cruise_charge_time if engine else 0
 
-    def hardpoints(self) -> Dict[str, List[str]]:
-        """A mapping of this ship's hardpoints of the form {hardpoint nickname -> [weapon classes]}."""
+    def hardpoints(self) -> Dict[str, List['Hardpoint']]:
+        """A mapping of this ship's hardpoints of the form
+        {hardpoint nickname -> union of weapon classes that can be mounted on this hardpoint}."""
         result = {}
         for hp_class, *hardpoints in self.hp_type:
             for hp in hardpoints:
-                result.setdefault(hp, []).append(hp_class)
+                result.setdefault(hp, []).append(Hardpoint(hp_class))
         return result
 
     @staticmethod
@@ -147,3 +150,42 @@ class Ship(Entity):
             result.extend(dll.parse(ship_class, 0).values())
 
         return result
+
+
+@dataclass
+class Hardpoint:
+    """A ship hardpoint on which a piece of equipment can be mounted.
+    Not an Entity and not exported."""
+    nickname: str
+
+    def name(self):
+        """Hardpoint names are found in hardcoded ranges. TODO: engine classes."""
+        return dll.lookup(self.NAME_IDS.get(self.nickname)) or self.nickname
+
+    def category(self):
+        """The hardpoint's category is the tab the game displays it under.
+        These rules are also hardcoded."""
+
+    # add singletons
+    NAME_IDS = {
+        'hp_gun': 948,
+        'hpmine01': 1522,
+        'hp_thruster': 1520,
+        'hp_torpedo': 1521,  # CD
+        'hp_torpedo_special_1': 1741,  # fighter torpedo
+        'hp_torpedo_special_2': 1742,  # bomber torpedo
+        'hp_mine_dropper': 1522,
+        'hpcm01': 1523,
+        'hp_countermeasure_dropper': 1523,
+        'hp_fighter_shield_generator': 1517,
+        'hp_elite_shield_generator': 1518,
+    }
+
+    # add ranges
+    ten = list(range(10))
+    NAME_IDS.update({f'hp_fighter_shield_special_{i + 1}': i + 1700 for i in ten})
+    NAME_IDS.update({f'hp_elite_shield_special_{i + 1}': i + 1711 for i in ten})
+    NAME_IDS.update({f'hp_freighter_shield_special_{i + 1}': i + 1721 for i in ten})
+    NAME_IDS.update({f'hp_gun_special_{i + 1}': i + 946 for i in ten})
+    NAME_IDS.update({f'hp_turret_special_{i + 1}': i + 1731 for i in ten})
+    del ten
