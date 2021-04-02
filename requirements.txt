@@ -1,2 +1,2 @@
-dataclassy>=0.7
+dataclassy==0.7.2
 deconstruct>0.2
