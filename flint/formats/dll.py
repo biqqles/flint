@@ -12,6 +12,7 @@ for rich-text strings) to HTML.
 """
 from typing import Dict
 from os import SEEK_CUR
+import warnings
 
 import deconstruct as c
 
@@ -159,7 +160,7 @@ def parse(path: str, external_strid_offset: int = 0) -> Dict[int, str]:
                 elif resource_type == RT_VERSION:
                     pass
                 else:
-                    raise NotImplementedError('Unexpected resource type:', hex(resource_type))
+                    warnings.warn(f'Unexpected resource type ({hex(resource_type)}) in file {path!r}, name {name}')
         return resources
 
 
