@@ -20,7 +20,6 @@ from .. import cached
 from .. import paths
 from . import WinStruct
 
-
 resource_table: Dict[int, Dict[int, str]] = {}
 
 
@@ -58,6 +57,24 @@ def lookup_as_html(resource_id: int) -> str:
 def lookup_as_plain(resource_id: int) -> str:
     """Looks up the given resource ID and strips out all RDL tags. Paragraph tags are replaced with newlines."""
     return rdl_to_plaintext(lookup(resource_id))
+
+
+def dump_all() -> Dict[int, str]:
+    """Read all string resources from all DLLs.
+    This is a bit hacky Look up the first resource in each DLL to force the file to be lazy-loaded."""
+    result = {}
+    for i in paths.dlls:
+        lookup(i * 65536)
+        result.update(resource_table[i])
+    return result
+
+
+def dump_all_to_file(filename: str = 'infocards.txt'):
+    """Dump all string resources to a text file in an identical format to that produced by FLInfocardIE."""
+    resources = dump_all()
+    pairs = (f'{id_}\n{text.strip()}\n' for id_, text in resources.items())
+    with open(filename, 'w') as f:
+        f.writelines(pairs)
 
 
 def parse(path: str, external_strid_offset: int = 0) -> Dict[int, str]:
