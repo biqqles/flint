@@ -87,11 +87,11 @@ def parse_section(section: str):
 def parse_entry(entry: str):
     """Takes an entry string consisting of a delimiter separated key/value pair and outputs a tuple of the
     name and value. If the entry is invalid, an empty tuple will be returned."""
-    entry = entry.split(DELIMITER_COMMENT, 1)[0].replace(' ', '').replace('\t', '')  # remove comments and whitespace
+    entry = entry.split(DELIMITER_COMMENT, 1)[0]  # remove comments
     key, delimiter, value = entry.partition(DELIMITER_KEY_VALUE)
     if not delimiter:  # if this isn't a valid entry line after all
         return ()
-    return key, parse_value(value)
+    return key.strip(), parse_value(value)
 
 
 def parse_value(entry_value: str) -> Union[Any, Tuple]:
@@ -103,6 +103,7 @@ def parse_value(entry_value: str) -> Union[Any, Tuple]:
 def auto_cast(value: str) -> Any:
     """Interpret and coerce a string value to a Python type. If the value cannot be interpreted as a valid Python type,
     a `ValueError` will be raised."""
+    value = value.strip()
     if not (value[:1] == '-' or value[:1].isdigit()):  # if not a number
         if value == 'true':
             return True
