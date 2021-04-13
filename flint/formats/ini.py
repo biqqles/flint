@@ -89,7 +89,7 @@ def parse_entry(entry: str):
     name and value. If the entry is invalid, an empty tuple will be returned."""
     entry = entry.split(DELIMITER_COMMENT, 1)[0].replace(' ', '').replace('\t', '')  # remove comments and whitespace
     key, delimiter, value = entry.partition(DELIMITER_KEY_VALUE)
-    if not delimiter or key == 'comment':  # if this isn't a valid entry line after all
+    if not delimiter:  # if this isn't a valid entry line after all
         return ()
     return key, parse_value(value)
 
