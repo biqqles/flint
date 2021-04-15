@@ -158,13 +158,18 @@ class Hardpoint:
     Not an Entity and not exported."""
     nickname: str
 
-    def name(self):
-        """Hardpoint names are found in hardcoded ranges. TODO: engine classes."""
+    def name(self) -> str:
+        """Hardpoint names are found in hardcoded ranges. TODO: engine classes provided by engclass.dll."""
         return dll.lookup(self.NAME_IDS.get(self.nickname)) or self.nickname
 
-    def category(self):
+    def category(self) -> str:
         """The hardpoint's category is the tab the game displays it under.
         These rules are also hardcoded."""
+        if any(n in self.nickname for n in ('gun', 'torpedo', 'mine', 'turret')):
+            return 'weapons'
+        if any(n in self.nickname for n in ('shield', 'thruster')):
+            return 'external'
+        return 'internal'
 
     # add singletons
     NAME_IDS = {
