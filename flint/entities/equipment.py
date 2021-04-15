@@ -106,16 +106,18 @@ class Gun(Weapon):
         return self.munition().hull_damage_()
 
     def shield_damage(self) -> float:
-        """Shield damage dealt per shot."""
-        return self.munition().energy_damage_()
+        """Shield damage dealt per shot.
+        If the munition does not specify a value for energy damage, half the hull damage is used.
+        TODO: this is configurable via constants.ini."""
+        return self.munition().energy_damage_() or (self.hull_damage() / 2)
 
     def hull_dps(self) -> float:
         """Hull damage dealt per second."""
-        return self.refire() * self.munition().hull_damage
+        return self.refire() * self.hull_damage()
 
     def shield_dps(self) -> float:
         """Shield damage dealt per second."""
-        return self.refire() * self.munition().energy_damage
+        return self.refire() * self.shield_damage()
 
     def energy_per_second(self) -> float:
         """Energy consumption per second (i.e. power).."""
