@@ -14,7 +14,7 @@ from functools import lru_cache
 import operator
 import pprint
 
-from dataclassy import dataclass
+from dataclassy import dataclass, as_dict
 
 from ..formats import dll
 
@@ -56,6 +56,9 @@ class Entity:
 
     def __eq__(self, other) -> bool:
         return self.nickname == other.nickname
+
+    # Return this entity's fields as a dictionary.
+    as_dict = as_dict
 
     _markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
 
