@@ -87,7 +87,7 @@ def get_equipment() -> EntitySet[Equipment]:
                     yield section_name_to_type[section](**contents)
                 except TypeError as e:
                     warnings.warn(f'Failed to initialise equipment of type {section!r} and nickname '
-                                  f'{contents.get("nickname")!r}: {e.args[0]}')
+                                  f'{contents.get("nickname")!r}: {e}')
             else:
                 warnings.warn(f'Unknown equipment type {section!r} - ignoring')
 

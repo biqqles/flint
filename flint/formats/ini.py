@@ -80,7 +80,7 @@ def parse_section(section: str):
     try:
         return section_name, list(map(parse_entry, entries.splitlines()))
     except ValueError as e:  # an entry with a syntax error invalidates the whole section
-        warnings.warn(f"Couldn't parse line in section {section_name!r}; {e.args[0]}")
+        warnings.warn(f"Couldn't parse line in section {section_name!r}; {e}")
         return ()
 
 
