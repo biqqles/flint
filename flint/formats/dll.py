@@ -97,7 +97,11 @@ def parse(path: str, external_strid_offset: int = 0) -> Dict[int, str]:
             resource_string = ResourceDirectoryString(f.read(2))
             if resource_string.Length:
                 strid = (name - 1) * 16 + s + external_strid_offset
-                text = f.read(resource_string.Length * 2).decode('utf-16')
+                try:
+                    text = f.read(resource_string.Length * 2).decode('utf-16')
+                except UnicodeDecodeError as e:
+                    warnings.warn(f'String resource (strid: {strid}) has invalid UTF-16: {e}')
+                    text = ''
                 string_table[strid] = text
         return string_table
 
@@ -155,7 +159,11 @@ def parse(path: str, external_strid_offset: int = 0) -> Dict[int, str]:
                     resources.update(read_string_table())
                 elif resource_type == RT_HTML:
                     strid = name + external_strid_offset
-                    text = f.read(data.Size).decode('utf-16')
+                    try:
+                        text = f.read(data.Size).decode('utf-16')
+                    except UnicodeDecodeError as e:
+                        warnings.warn(f'XML resource (ids: {strid}, {path}:{name}) has invalid UTF-16: {e}')
+                        text = ''
                     resources[strid] = text
                 elif resource_type == RT_VERSION:
                     pass
