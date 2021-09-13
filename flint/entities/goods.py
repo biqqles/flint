@@ -64,7 +64,6 @@ class CommodityGood(EquipmentGood):
     bad_buy_price: float
     bad_sell_price: float
     good_buy_price: float
-    shop_archetype: str
 
     def commodity(self) -> 'Commodity':
         """The Commodity entity this good refers to."""
