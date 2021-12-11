@@ -19,15 +19,15 @@ as logic for checking whether a .ini file is an INI or a BINI.
 """
 from typing import Union, List, Dict, Any, Tuple
 from collections import defaultdict
-from functools import lru_cache
 import concurrent.futures
 import itertools
 import warnings
 
+from .. import cached
 from . import bini
 
 
-@lru_cache(64)
+@cached
 def sections(paths: Union[str, Tuple[str]], fold_sections=False, fold_values=True) -> Dict[str, Any]:
     """Parse the Freelancer-style INI file(s) at `paths` and group sections of the same name together.
 

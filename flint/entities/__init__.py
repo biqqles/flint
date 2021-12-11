@@ -10,13 +10,13 @@ Freelancer.
 """
 from typing import TypeVar, Iterable, Generic, Type, Optional, Dict, Union
 from collections.abc import Mapping, KeysView, ItemsView
-from functools import lru_cache
 import operator
 import pprint
 
 from dataclassy import dataclass, as_dict
 
 from ..formats import dll
+from .. import cached
 
 
 @dataclass(kwargs=True, slots=True)
@@ -126,12 +126,12 @@ class EntitySet(Mapping, Generic[T]):
         """All entities in this set."""
         return self._map.items()
 
-    @lru_cache(maxsize=256)
+    @cached
     def of_type(self, type_: Type[F]) -> 'EntitySet[F]':
         """Return a new, homogeneous EntitySet containing only Entities which are instances of the given type."""
         return EntitySet(filter(lambda e: isinstance(e, type_), self))
 
-    @lru_cache(maxsize=256)
+    @cached
     def reindex(self, on: str) -> 'EntitySet[T]':
         """Reindex this EntitySet on the field with name `on`."""
         return EntitySet({getattr(entity, on): entity for entity in self})

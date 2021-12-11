@@ -11,7 +11,7 @@ from typing import Dict, Tuple, Optional
 import os
 
 from .formats import ini
-from . import cached
+from . import cached, invalidate_cache
 
 install: Optional[str] = None
 inis: Dict[str, Tuple[str]] = {}  # ini category (defined in freelancer.ini) to a list of paths
@@ -25,6 +25,8 @@ def set_install_path(new_path, discovery=False):
         raise FileNotFoundError(new_path)
     assert is_probably_freelancer(new_path, discovery)
     install = new_path
+
+    invalidate_cache()
     generate_index()
 
 

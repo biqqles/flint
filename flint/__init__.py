@@ -5,27 +5,27 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from types import FunctionType
-from typing import Dict, Any
-from functools import wraps
+from types import FunctionType as Function
+from typing import Set
+from functools import lru_cache
 import warnings
 
 warnings.formatwarning = lambda message, *args, **kwargs: f'{message!s}\n'  # patch formatter to only show message
-central_cache: Dict[FunctionType, Dict[tuple, Any]] = {}
+central_cache: Set[object] = set()
 
 
-def cached(function):
+def cached(function: Function) -> object:
     """A decorator which caches a function to the central cache."""
-    central_cache[function] = {}  # initialise cache
-
-    @wraps(function)
-    def wrapped(*args):
-        function_cache = central_cache[function]
-        if args in function_cache:
-            return function_cache[args]
-        result = function_cache[args] = function(*args)
-        return result
+    wrapped = lru_cache(maxsize=None)(function)
+    central_cache.add(wrapped)
     return wrapped
+
+
+def invalidate_cache():
+    """Invalidate (empty) the central cache."""
+    for f in central_cache:
+        # noinspection PyUnresolvedReferences
+        f.cache_clear()
 
 
 from .paths import set_install_path, install_path_set
