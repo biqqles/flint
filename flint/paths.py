@@ -24,10 +24,11 @@ def set_install_path(new_path, discovery=False):
     if not os.path.exists(new_path):
         raise FileNotFoundError(new_path)
     assert is_probably_freelancer(new_path, discovery)
-    install = new_path
 
-    invalidate_cache()
-    generate_index()
+    if install != new_path:
+        install = new_path
+        invalidate_cache()
+        generate_index()
 
 
 def install_path_set() -> bool:
