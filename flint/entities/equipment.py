@@ -302,6 +302,7 @@ class ShieldBattery(Equipment):
 class Engine(Mountable):
     """A reaction engine that must be mounted to a ship to provide propulsion."""
     cruise_charge_time: int
+    cruise_speed: Optional[int] = 0
     reverse_fraction: float
     linear_drag: float
     max_force: float
