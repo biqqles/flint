@@ -27,7 +27,7 @@ class Ship(Entity):
     ids_info2: Optional[int] = None  # extra stat names list
     ids_info3: Optional[int] = None  # extra stat values list
     ship_class: int = 0
-    mission_property: str
+    mission_property: str = None
     hit_pts: int
     hold_size: int
     mass: int
