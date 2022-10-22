@@ -50,7 +50,7 @@ Thanks to the admins, members and supporters of [The Starport](https://the-starp
 In addition, particular thanks goes to:
 
 - Bas Westerbaan for [documenting](https://drive.google.com/open?id=1JlQa19mEiuHzpnAc8B1d2wTcgnvdl_tH) the BINI format
-- Treewyrm for [documenting](https://wiki.librelancer.net/utf:universal_tree_format) UTF
+- Treewyrm for [documenting](https://wiki.librelancer.net/utf) UTF
 - adoxa and cshake for [deciphering](https://the-starport.net/modules/newbb/viewtopic.php?&topic_id=562) RDL
 - cshake and Alex for providing a cross-platform DLL parser, which facilitated early development
 - Syrus for support in the early stages of development
