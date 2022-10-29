@@ -89,7 +89,9 @@ class BaseSolar(Object):
 
         specifications = lookup(self.ids_info)
         try:
-            synopsis = lookup(self.ids_info + 1)
+            synopsis = lookup(interface.get_infocardmap().get(self.ids_info))
+            if not synopsis:
+                synopsis = lookup(self.ids_info + 1)
             return specifications + '<p>' + synopsis
         except KeyError:
             return specifications
