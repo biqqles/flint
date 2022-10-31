@@ -108,7 +108,7 @@ class Star(Spheroid):
 @dataclass(slots=False)
 class Planet(Spheroid):
     """A planet in a System."""
-    spin: Tuple[float, float, float]
+    spin: Tuple[float, float, float] = (0., 0., 0.)
 
 
 class PlanetaryBase(Planet, BaseSolar):

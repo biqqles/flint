@@ -140,7 +140,7 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
                 result.append(Wreck(**o))
             elif 'star' in keys:
                 result.append(Star(**o))
-            elif 'spin' in keys:
+            elif 'spin' in keys or 'atmosphere_range' in keys:
                 result.append(PlanetaryBase(**o) if 'base' in keys else Planet(**o))
             else:
                 result.append(Object(**o))
