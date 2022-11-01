@@ -4,7 +4,8 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Set
+from collections import defaultdict
 import os
 
 from dataclassy import Internal
@@ -101,25 +102,20 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
-    def rumors(self, markup = "html") -> dict:
+    def rumors(self, markup="html") -> Dict[str, Set]:
         """All rumors offered on this base, of the form {faction -> rumors}"""
         lookup = self._markup_formats[markup]
         if self.mbase():
-            rumors = {}
+            rumors = defaultdict(set)
             npcs = self.mbase().npcs
 
             for npc in npcs:
-                temp = []
-                if type(npc.rumor) != list: npc.rumor = [npc.rumor]
-                for rumor in npc.rumor:
-                    temp.append(lookup(rumor[3]))
-                if temp != []:
-                    if not rumors.get(npc.affiliation):
-                        rumors[npc.affiliation] = temp
-                    else:
-                        rumors[npc.affiliation] = rumors.get(npc.affiliation) + temp
-            
-            return {affiliation: list(dict.fromkeys(content)) for affiliation, content in rumors.items()}
+                if type(npc.rumor) is not list:
+                    npc.rumor = [npc.rumor]
+                for *_, rumor_id in npc.rumor:
+                    rumors[npc.affiliation].add(lookup(rumor_id))
+            return dict(rumors)
+        return {}
 
     def owner(self) -> 'Faction':
         """The faction which owns this base (its IFF)."""
