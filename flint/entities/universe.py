@@ -101,6 +101,26 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
+    def rumors(self, markup = "html") -> dict:
+        """All rumors offered on this base, of the form {faction -> rumors}"""
+        lookup = self._markup_formats[markup]
+        if self.mbase():
+            rumors = {}
+            npcs = self.mbase().npcs
+
+            for npc in npcs:
+                temp = []
+                if type(npc.rumor) != list: npc.rumor = [npc.rumor]
+                for rumor in npc.rumor:
+                    temp.append(lookup(rumor[3]))
+                if temp != []:
+                    if not rumors.get(npc.affiliation):
+                        rumors[npc.affiliation] = temp
+                    else:
+                        rumors[npc.affiliation] = rumors.get(npc.affiliation) + temp
+            
+            return {affiliation: list(dict.fromkeys(content)) for affiliation, content in rumors.items()}
+
     def owner(self) -> 'Faction':
         """The faction which owns this base (its IFF)."""
         return self.solar().owner() if self.has_solar() \
