@@ -102,7 +102,7 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
-    def rumors(self, markup="html") -> Dict[str, Set[str]]:
+    def rumors(self, markup='html') -> Dict[str, Set[str]]:
         """All rumors offered on this base, of the form {faction -> rumors}"""
         lookup = self._markup_formats[markup]
         if self.mbase():
@@ -112,8 +112,9 @@ class Base(Entity):
             for npc in npcs:
                 if type(npc.rumor) is not list:
                     npc.rumor = [npc.rumor]
-                for *_, rumor_id in npc.rumor:
-                    rumors[npc.affiliation].add(lookup(rumor_id))
+                rumors[npc.affiliation].update(
+                    lookup(rumor_id) for *_, rumor_id in npc.rumor
+                )
             return dict(rumors)
         return {}
 
