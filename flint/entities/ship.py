@@ -116,6 +116,12 @@ class Ship(Entity):
         """The maximum speed of this ship for a given force, in m/s."""
         return force / self.total_linear_drag()
 
+    def thrust_speed(self, thrust_force = 72000) -> float:
+        """The maximum thrust speed of this ship for a given thrust force, in m/s."""
+        engine = self.engine()
+        force = thrust_force + engine.max_force if engine else thrust_force
+        return force / self.total_linear_drag()
+
     def total_linear_drag(self) -> float:
         """The total linear resistive force for this ship and engine, in N (?)."""
         engine = self.engine()
