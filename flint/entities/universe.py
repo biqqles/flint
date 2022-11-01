@@ -102,7 +102,7 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
-    def rumors(self, markup="html") -> Dict[str, Set]:
+    def rumors(self, markup="html") -> Dict[str, Set[str]]:
         """All rumors offered on this base, of the form {faction -> rumors}"""
         lookup = self._markup_formats[markup]
         if self.mbase():
