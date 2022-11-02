@@ -130,8 +130,11 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
         if solar_type == 'object':
             o = attributes
             keys = o.keys()
-            if {'base', 'reputation', 'space_costume'} <= keys:
-                result.append(BaseSolar(**o))
+            is_planet = 'spin' in keys or 'atmosphere_range' in keys
+
+            if 'base' in keys and 'reputation' in keys:
+                if (o['nickname'] in o['base']) or (system.nickname not in o['base']):
+                    result.append(PlanetaryBase(**o) if is_planet else BaseSolar(**o))
             elif 'goto' in keys:
                 result.append(Jump(**o))
             elif 'prev_ring' in keys or 'next_ring' in keys:
@@ -140,8 +143,8 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
                 result.append(Wreck(**o))
             elif 'star' in keys:
                 result.append(Star(**o))
-            elif 'spin' in keys or 'atmosphere_range' in keys:
-                result.append(PlanetaryBase(**o) if 'base' in keys else Planet(**o))
+            elif is_planet:
+                result.append(Planet(**o))
             else:
                 result.append(Object(**o))
 
