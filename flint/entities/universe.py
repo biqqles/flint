@@ -101,10 +101,14 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
-    def owner(self) -> 'Faction':
+    def owner(self) -> Optional['Faction']:
         """The faction which owns this base (its IFF)."""
-        return self.solar().owner() if self.has_solar() \
-            else routines.get_factions()[self.mbase().local_faction] if self.mbase() else None
+        if self.has_solar():
+            return self.solar().owner()
+
+        mbase = self.mbase()
+        if mbase:
+            return routines.get_factions()[mbase.local_faction]
 
     def sector(self) -> str:
         """The sector of this base's solar in its system."""
