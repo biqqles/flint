@@ -133,7 +133,7 @@ def get_system_contents(system: System) -> EntitySet[Solar]:
             is_planet = 'spin' in keys or 'atmosphere_range' in keys
 
             if 'base' in keys and 'reputation' in keys:
-                if (system.nickname not in o['base']) or (o['nickname'] in o['base']):
+                if (o['nickname'] in o['base']) or (system.nickname not in o['base']):
                     result.append(PlanetaryBase(**o) if is_planet else BaseSolar(**o))
             elif 'goto' in keys:
                 result.append(Jump(**o))
