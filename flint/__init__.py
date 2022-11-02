@@ -14,10 +14,11 @@ warnings.formatwarning = lambda message, *args, **kwargs: f'{message!s}\n'  # pa
 central_cache: Set[object] = set()
 
 
-def cached(function: Function) -> object:
+def cached(function: Function) -> Function:
     """A decorator which caches a function to the central cache."""
     wrapped = lru_cache(maxsize=None)(function)
     central_cache.add(wrapped)
+    # noinspection PyTypeChecker
     return wrapped
 
 
