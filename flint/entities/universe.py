@@ -110,11 +110,12 @@ class Base(Entity):
             npcs = self.mbase().npcs
 
             for npc in npcs:
-                if type(npc.rumor) is not list:
-                    npc.rumor = [npc.rumor]
-                rumors[npc.affiliation].update(
-                    lookup(rumor_id) for *_, rumor_id in npc.rumor
-                )
+                if npc.rumor:
+                    if type(npc.rumor) is not list:
+                        npc.rumor = [npc.rumor]
+                    rumors[npc.affiliation].update(
+                        lookup(rumor_id) for *_, rumor_id in npc.rumor
+                    )
             return dict(rumors)
         return {}
 
