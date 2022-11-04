@@ -113,7 +113,7 @@ class Base(Entity):
                 if npc.rumor:
                     if type(npc.rumor) is not list:
                         npc.rumor = [npc.rumor]
-                    rumors[npc.affiliation].update(
+                    rumors[routines.get_factions()[npc.affiliation]].update(
                         lookup(rumor_id) for *_, rumor_id in npc.rumor
                     )
             return dict(rumors)
