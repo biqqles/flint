@@ -8,6 +8,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Interface-related functions, such as routines for translating RDL.
 """
 import xml.etree.ElementTree as xml
+from . import paths, cached
 
 
 def rdl_to_html(rdl: str) -> str:
