@@ -13,11 +13,10 @@ from dataclassy import Internal
 from ..formats import dll
 from .. import paths, routines, missions
 from . import Entity, EntitySet
-from .solars import BaseSolar
+from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing
 from .equipment import Equipment, Commodity
 from .ship import Ship
 from .goods import EquipmentGood, CommodityGood, ShipPackage
-
 
 class System(Entity):
     """A star system."""
@@ -102,9 +101,11 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
-    def rumors(self, markup='html') -> Dict[str, Set[str]]:
+    def rumors(self, markup='html') -> Dict['Faction', Set[str]]:
         """All rumors offered on this base, of the form {faction -> rumors}"""
         lookup = self._markup_formats[markup]
+        factions = routines.get_factions()
+
         if self.mbase():
             rumors = defaultdict(set)
             npcs = self.mbase().npcs
@@ -113,7 +114,7 @@ class Base(Entity):
                 if npc.rumor:
                     if type(npc.rumor) is not list:
                         npc.rumor = [npc.rumor]
-                    rumors[routines.get_factions()[npc.affiliation]].update(
+                    rumors[factions[npc.affiliation]].update(
                         lookup(rumor_id) for *_, rumor_id in npc.rumor
                     )
             return dict(rumors)
@@ -188,6 +189,3 @@ class Faction(Entity):
         return self.props().legality.capitalize()
 
     NODOCK_REP = -0.65
-
-
-from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing
