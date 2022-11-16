@@ -81,9 +81,10 @@ class Base(Entity):
     ids_info = None  # infocard is defined by the base's solar
     system: str
 
-    def infocard(self, markup='html') -> str:
+    def infocard(self, markup='html') -> Optional[str]:
         """The infocard of this base's solar (Base sections do not define ids_info)."""
-        return self.solar().infocard(markup)
+        if self.has_solar():
+            return self.solar().infocard(markup)
 
     def system_(self) -> System:
         """The entity of the system this base resides in."""
@@ -94,7 +95,8 @@ class Base(Entity):
         return self.system_().bases().unique(base=self.nickname)
 
     def has_solar(self) -> bool:
-        """Whether this base has a physical solar."""
+        """Whether this base has a physical, real solar instance.
+        Excludes proxy bases, asteroid miners and other evils."""
         return self.solar() is not None
 
     def mbase(self) -> Optional[missions.MBase]:
@@ -120,14 +122,19 @@ class Base(Entity):
             return dict(rumors)
         return {}
 
-    def owner(self) -> 'Faction':
+    def owner(self) -> Optional['Faction']:
         """The faction which owns this base (its IFF)."""
-        return self.solar().owner() if self.has_solar() \
-            else routines.get_factions()[self.mbase().local_faction] if self.mbase() else None
+        if self.has_solar():
+            return self.solar().owner()
 
-    def sector(self) -> str:
+        mbase = self.mbase()
+        if mbase:
+            return routines.get_factions()[mbase.local_faction]
+
+    def sector(self) -> Optional[str]:
         """The sector of this base's solar in its system."""
-        return self.solar().sector()
+        if self.has_solar():
+            return self.solar().sector()
 
     def market(self):
         return routines.get_markets()[self]
