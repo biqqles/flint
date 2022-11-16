@@ -4,7 +4,8 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Set
+from collections import defaultdict
 import os
 
 from dataclassy import Internal
@@ -12,11 +13,10 @@ from dataclassy import Internal
 from ..formats import dll
 from .. import paths, routines, missions
 from . import Entity, EntitySet
-from .solars import BaseSolar
+from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing
 from .equipment import Equipment, Commodity
 from .ship import Ship
 from .goods import EquipmentGood, CommodityGood, ShipPackage
-
 
 class System(Entity):
     """A star system."""
@@ -103,6 +103,25 @@ class Base(Entity):
         """The mission base entry for this base."""
         return missions.get_mbases().get(self.nickname)
 
+    def rumors(self, markup='html') -> Dict['Faction', Set[str]]:
+        """All rumors offered on this base, of the form {faction -> rumors}"""
+        lookup = self._markup_formats[markup]
+        factions = routines.get_factions()
+
+        if self.mbase():
+            rumors = defaultdict(set)
+            npcs = self.mbase().npcs
+
+            for npc in npcs:
+                if npc.rumor:
+                    if type(npc.rumor) is not list:
+                        npc.rumor = [npc.rumor]
+                    rumors[factions[npc.affiliation]].update(
+                        lookup(rumor_id) for *_, rumor_id in npc.rumor
+                    )
+            return dict(rumors)
+        return {}
+
     def owner(self) -> Optional['Faction']:
         """The faction which owns this base (its IFF)."""
         if self.has_solar():
@@ -177,6 +196,3 @@ class Faction(Entity):
         return self.props().legality.capitalize()
 
     NODOCK_REP = -0.65
-
-
-from .solars import Solar, BaseSolar, Jump, Planet, Star, Zone, Object, TradeLaneRing
