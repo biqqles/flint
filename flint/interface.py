@@ -36,7 +36,7 @@ def html_to_rdl(html: str) -> str:
 @cached
 def get_infocard_map() -> Dict[int, int]:
     """Return a dict of each ID in infocardmap.ini mapped to the other ID"""
-    return {id0: id1 for id0, id1 in ini.parse(paths.construct_path("DATA/INTERFACE/infocardmap.ini"))[0][1]["map"]}
+    return dict(ini.parse(paths.construct_path('DATA/INTERFACE/infocardmap.ini'))[0][1]['map'])
 
 # A lookup table mapping RDL (Render Display List) tags to HTML(4). Freelancer, to my eternal horror, uses these for
 # formatting for strings inside these resource DLLs. Based on work by adoxa and cshake.
