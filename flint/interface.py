@@ -34,7 +34,7 @@ def html_to_rdl(html: str) -> str:
     return result
 
 @cached
-def get_infocardmap() -> Dict[int, int]:
+def get_infocard_map() -> Dict[int, int]:
     """Return a dict of each ID in infocardmap.ini mapped to the other ID"""
     return {id0: id1 for id0, id1 in ini.parse(paths.construct_path("DATA/INTERFACE/infocardmap.ini"))[0][1]["map"]}
 
