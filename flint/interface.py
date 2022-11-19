@@ -38,7 +38,7 @@ def html_to_rdl(html: str) -> str:
 @cached
 def get_constants() -> dict:
     path = paths.inis["constants"]
-    return {header: attributes for header, attributes in ini.parse(path)}
+    return dict(ini.parse(path))
 
 # A lookup table mapping RDL (Render Display List) tags to HTML(4). Freelancer, to my eternal horror, uses these for
 # formatting for strings inside these resource DLLs. Based on work by adoxa and cshake.
