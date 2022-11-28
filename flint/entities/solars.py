@@ -10,7 +10,7 @@ from typing import Tuple, Optional, Union
 from dataclassy import dataclass
 
 from . import Entity
-from .. import maps
+from .. import interface, maps
 
 
 class Solar(Entity):
@@ -83,13 +83,13 @@ class BaseSolar(Object):
         return routines.get_factions()[self.reputation]
 
     def infocard(self, markup='html') -> str:
-        """Base infocards are actually in two parts, with ids_info referring to the specs of a base and ids_info + 1
-        storing the actual description"""
+        """Base infocards are actually in two parts, with ids_info referring to the specs of a base
+        and a second reference (defined in infocardmap.ini) storing the actual flavour text."""
         lookup = self._markup_formats[markup]
 
         specifications = lookup(self.ids_info)
         try:
-            synopsis = lookup(self.ids_info + 1)
+            synopsis = lookup(interface.get_infocard_map()[self.ids_info])
             return specifications + '<p>' + synopsis
         except KeyError:
             return specifications

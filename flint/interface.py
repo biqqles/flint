@@ -7,7 +7,11 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Interface-related functions, such as routines for translating RDL.
 """
+from typing import Dict
 import xml.etree.ElementTree as xml
+
+from .formats import ini
+from . import cached, paths
 
 
 def rdl_to_html(rdl: str) -> str:
@@ -33,6 +37,10 @@ def html_to_rdl(html: str) -> str:
         result = result.replace(html_tag, rdl_tag)
     return result
 
+@cached
+def get_infocard_map() -> Dict[int, int]:
+    """Return a dict of each ID in infocardmap.ini mapped to the other ID."""
+    return dict(ini.parse(paths.construct_path('DATA/INTERFACE/infocardmap.ini'))[0][1]['map'])
 
 # A lookup table mapping RDL (Render Display List) tags to HTML(4). Freelancer, to my eternal horror, uses these for
 # formatting for strings inside these resource DLLs. Based on work by adoxa and cshake.
