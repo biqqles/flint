@@ -56,12 +56,12 @@ def get_mbases() -> Dict[str, 'MBase']:
 @cached
 def get_news() -> Dict[str, 'NewsItem']:
     """Produce a dictionary of base nicknames to their news items."""
-    news = ini.parse(paths.construct_path("DATA/MISSIONS/news.ini"))
+    news = ini.parse(paths.construct_path('DATA/MISSIONS/news.ini'))
 
     result = defaultdict(list)
 
     for _, contents in news:
-        bases = contents.get("base")
+        bases = contents.get('base')
         if bases:
             if type(bases) != list:
                 bases = [bases]
@@ -86,18 +86,18 @@ class NewsItem:
     audio: Optional[bool] = False
     base: List[str] = []
 
-    def lookup(self, id, markup = "html"):
+    def lookup(self, id, markup = 'html'):
         _markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
         lookup = _markup_formats[markup]
         return lookup(id)
 
-    def _category(self, markup = "html"):
+    def _category(self, markup = 'html'):
         return self.lookup(self.category, markup)
 
-    def _headline(self, markup = "html"):
+    def _headline(self, markup = 'html'):
         return self.lookup(self.headline, markup)
 
-    def _text(self, markup = "html"):
+    def _text(self, markup = 'html'):
         return self.lookup(self.text, markup)	
 
 @dataclass
