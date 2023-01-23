@@ -123,7 +123,7 @@ class Base(Entity):
         return {}
 
     def news(self):
-        """A list of all news items being shown on this base"""
+        """A list of all news items being shown on this base."""
         return missions.get_news().get(self.nickname)
 
     def owner(self) -> Optional['Faction']:
