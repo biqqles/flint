@@ -54,53 +54,53 @@ def get_mbases() -> Dict[str, 'MBase']:
 
 @cached
 def get_news() -> Dict[str, 'NewsItem']:
-	"""Produce a dictionary of base nicknames to their news items."""
-	news = ini.parse(paths.construct_path("DATA/MISSIONS/news.ini"))
+    """Produce a dictionary of base nicknames to their news items."""
+    news = ini.parse(paths.construct_path("DATA/MISSIONS/news.ini"))
 
-	result = {}
+    result = {}
 
-	for _, contents in news:
-		bases = contents.get("base")
-		if bases:
-			if type(bases) != list:
-				bases = [bases]
+    for _, contents in news:
+        bases = contents.get("base")
+        if bases:
+            if type(bases) != list:
+                bases = [bases]
 
-			for base in bases:
-				if result.get(base):
-					result[base].append(NewsItem(**contents))
-				else:
-					result[base] = [NewsItem(**contents)]
+            for base in bases:
+                if result.get(base):
+                    result[base].append(NewsItem(**contents))
+                else:
+                    result[base] = [NewsItem(**contents)]
 
-	return result
+    return result
 
 
 
 
 @dataclass
 class NewsItem:
-	"""A news item, found in news.ini."""
-	category: int
-	headline: int
-	text: int
-	rank: Optional[Tuple[str]] = ()
-	icon: Optional[str] = ""
-	logo: Optional[str] = ""
-	audio: Optional[bool] = False
-	base: List[str] = []
+    """A news item, found in news.ini."""
+    category: int
+    headline: int
+    text: int
+    rank: Optional[Tuple[str]] = ()
+    icon: Optional[str] = ""
+    logo: Optional[str] = ""
+    audio: Optional[bool] = False
+    base: List[str] = []
 
-	def lookup(self, id, markup = "html"):
-		_markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
-		lookup = _markup_formats[markup]
-		return lookup(id)
+    def lookup(self, id, markup = "html"):
+        _markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
+        lookup = _markup_formats[markup]
+        return lookup(id)
 
-	def _category(self, markup = "html"):
-		return self.lookup(self.category, markup)
+    def _category(self, markup = "html"):
+        return self.lookup(self.category, markup)
 
-	def _headline(self, markup = "html"):
-		return self.lookup(self.headline, markup)
+    def _headline(self, markup = "html"):
+        return self.lookup(self.headline, markup)
 
-	def _text(self, markup = "html"):
-		return self.lookup(self.text, markup)	
+    def _text(self, markup = "html"):
+        return self.lookup(self.text, markup)	
 
 @dataclass
 class MBase:
