@@ -80,10 +80,10 @@ class NewsItem:
     category: int
     headline: int
     text: int
-    rank: Optional[Tuple[str]] = ()
-    icon: Optional[str] = ""
-    logo: Optional[str] = ""
-    audio: Optional[bool] = False
+    rank: Tuple[str] = ()
+    icon: str = ""
+    logo: str = ""
+    audio: bool = False
     base: List[str] = []
 
     def lookup(self, id, markup = 'html'):
