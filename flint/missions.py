@@ -11,6 +11,7 @@ they lack associated string resource fields and/or nicknames.
 Instead they "belong to" a composite Entity, like a Base or Faction.
 """
 from typing import Tuple, List, Dict, Optional
+from collections import defaultdict
 
 from dataclassy import dataclass
 
@@ -57,7 +58,7 @@ def get_news() -> Dict[str, 'NewsItem']:
     """Produce a dictionary of base nicknames to their news items."""
     news = ini.parse(paths.construct_path("DATA/MISSIONS/news.ini"))
 
-    result = {}
+    result = defaultdict(list)
 
     for _, contents in news:
         bases = contents.get("base")
@@ -66,10 +67,7 @@ def get_news() -> Dict[str, 'NewsItem']:
                 bases = [bases]
 
             for base in bases:
-                if result.get(base):
-                    result[base].append(NewsItem(**contents))
-                else:
-                    result[base] = [NewsItem(**contents)]
+                result[base].append(NewsItem(**contents))
 
     return result
 
