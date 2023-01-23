@@ -85,20 +85,16 @@ class NewsItem:
     logo: str = ''
     audio: bool = False
     base: List[str] = []
-
-    def lookup(self, id, markup = 'html'):
-        _markup_formats = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
-        lookup = _markup_formats[markup]
-        return lookup(id)
+    lookup = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
 
     def _category(self, markup = 'html'):
-        return self.lookup(self.category, markup)
+        return self.lookup[markup](self.category)
 
     def _headline(self, markup = 'html'):
-        return self.lookup(self.headline, markup)
+        return self.lookup[markup](self.headline)
 
     def _text(self, markup = 'html'):
-        return self.lookup(self.text, markup)	
+        return self.lookup[markup](self.text)
 
 @dataclass
 class MBase:
