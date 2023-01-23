@@ -14,7 +14,7 @@ from typing import Tuple, List, Dict, Optional
 
 from dataclassy import dataclass
 
-from .formats import ini
+from .formats import ini, dll
 from . import cached, paths
 
 
