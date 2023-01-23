@@ -81,8 +81,8 @@ class NewsItem:
     headline: int
     text: int
     rank: Tuple[str, ...] = ()
-    icon: str = ""
-    logo: str = ""
+    icon: str = ''
+    logo: str = ''
     audio: bool = False
     base: List[str] = []
 
