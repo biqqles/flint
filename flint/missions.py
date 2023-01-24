@@ -11,10 +11,11 @@ they lack associated string resource fields and/or nicknames.
 Instead they "belong to" a composite Entity, like a Base or Faction.
 """
 from typing import Tuple, List, Dict, Optional
+from collections import defaultdict
 
-from dataclassy import dataclass
+from dataclassy import dataclass, Internal
 
-from .formats import ini
+from .formats import ini, dll
 from . import cached, paths
 
 
@@ -52,6 +53,46 @@ def get_mbases() -> Dict[str, 'MBase']:
 
     return {b.nickname: b for b in bases}
 
+@cached
+def get_news() -> Dict[str, List['NewsItem']]:
+    """Produce a dictionary of base nicknames to their news items."""
+    news = ini.parse(paths.construct_path('DATA/MISSIONS/news.ini'))
+
+    result = defaultdict(list)
+
+    for _, contents in news:
+        bases = contents.get('base')
+        if bases:
+            if type(bases) is not list:
+                bases = [bases]
+            for base in bases:
+                result[base].append(NewsItem(**contents))
+
+    return dict(result)
+
+@dataclass
+class NewsItem:
+    """A news item, found in news.ini."""
+    category: int
+    headline: int
+    text: int
+    rank: Tuple[str, ...] = ()
+    icon: str = ''
+    logo: str = ''
+    audio: bool = False
+    base: Internal[List[str]] = []
+
+    def category_(self) -> str:
+        """The category description of this news item."""
+        return dll.lookup(self.category)
+
+    def headline_(self) -> str:
+        """The headline of this news item."""
+        return dll.lookup(self.headline)
+
+    def text_(self) -> str:
+        """This news item's textual content."""
+        return dll.lookup(self.text)
 
 @dataclass
 class MBase:
