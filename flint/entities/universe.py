@@ -122,9 +122,9 @@ class Base(Entity):
             return dict(rumors)
         return {}
 
-    def news(self):
+    def news(self) -> List[missions.NewsItem]:
         """A list of all news items being shown on this base."""
-        return missions.get_news().get(self.nickname)
+        return missions.get_news().get(self.nickname, [])
 
     def owner(self) -> Optional['Faction']:
         """The faction which owns this base (its IFF)."""
