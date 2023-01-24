@@ -9,6 +9,7 @@ Interface-related functions, such as routines for translating RDL.
 """
 from typing import Dict
 import xml.etree.ElementTree as xml
+from . import paths, cached
 
 from .formats import ini
 from . import cached, paths
@@ -41,6 +42,11 @@ def html_to_rdl(html: str) -> str:
 def get_infocard_map() -> Dict[int, int]:
     """Return a dict of each ID in infocardmap.ini mapped to the other ID."""
     return dict(ini.parse(paths.construct_path('DATA/INTERFACE/infocardmap.ini'))[0][1]['map'])
+
+@cached
+def get_constants() -> dict:
+    path = paths.inis["constants"]
+    return dict(ini.parse(path))
 
 # A lookup table mapping RDL (Render Display List) tags to HTML(4). Freelancer, to my eternal horror, uses these for
 # formatting for strings inside these resource DLLs. Based on work by adoxa and cshake.
