@@ -13,7 +13,7 @@ Instead they "belong to" a composite Entity, like a Base or Faction.
 from typing import Tuple, List, Dict, Optional
 from collections import defaultdict
 
-from dataclassy import dataclass
+from dataclassy import dataclass, Internal
 
 from .formats import ini, dll
 from . import cached, paths
@@ -54,7 +54,7 @@ def get_mbases() -> Dict[str, 'MBase']:
     return {b.nickname: b for b in bases}
 
 @cached
-def get_news() -> Dict[str, 'NewsItem']:
+def get_news() -> Dict[str, List['NewsItem']]:
     """Produce a dictionary of base nicknames to their news items."""
     news = ini.parse(paths.construct_path('DATA/MISSIONS/news.ini'))
 
@@ -65,14 +65,10 @@ def get_news() -> Dict[str, 'NewsItem']:
         if bases:
             if type(bases) is not list:
                 bases = [bases]
-
             for base in bases:
                 result[base].append(NewsItem(**contents))
 
-    return result
-
-
-
+    return dict(result)
 
 @dataclass
 class NewsItem:
@@ -84,16 +80,20 @@ class NewsItem:
     icon: str = ''
     logo: str = ''
     audio: bool = False
-    base: List[str] = []
+    base: Internal[List[str]] = []
+
     lookup = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
 
-    def _category(self, markup = 'html'):
+    def category_(self, markup ='html') -> str:
+        """The category of this news item."""
         return self.lookup[markup](self.category)
 
-    def _headline(self, markup = 'html'):
+    def headline_(self, markup ='html') -> str:
+        """The headline of this news item."""
         return self.lookup[markup](self.headline)
 
-    def _text(self, markup = 'html'):
+    def text_(self, markup ='html') -> str:
+        """This news item's textual content."""
         return self.lookup[markup](self.text)
 
 @dataclass
