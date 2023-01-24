@@ -82,19 +82,17 @@ class NewsItem:
     audio: bool = False
     base: Internal[List[str]] = []
 
-    lookup = dict(html=dll.lookup_as_html, plain=dll.lookup_as_plain, rdl=dll.lookup)
+    def category_(self) -> str:
+        """The category description of this news item."""
+        return dll.lookup(self.category)
 
-    def category_(self, markup ='html') -> str:
-        """The category of this news item."""
-        return self.lookup[markup](self.category)
-
-    def headline_(self, markup ='html') -> str:
+    def headline_(self) -> str:
         """The headline of this news item."""
-        return self.lookup[markup](self.headline)
+        return dll.lookup(self.headline)
 
-    def text_(self, markup ='html') -> str:
+    def text_(self) -> str:
         """This news item's textual content."""
-        return self.lookup[markup](self.text)
+        return dll.lookup(self.text)
 
 @dataclass
 class MBase:
