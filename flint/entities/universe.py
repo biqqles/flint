@@ -64,9 +64,12 @@ class System(Entity):
         for first_ring in lanes:
             current_ring = first_ring
             while current_ring:
-                current_ring = rings.get(current_ring.next_ring)
-                if current_ring:
-                    lanes[first_ring].append(current_ring)
+                if current_ring.next_ring:
+                    current_ring = rings.get(current_ring.next_ring)
+                    if current_ring:
+                        lanes[first_ring].append(current_ring)
+                else:
+                    break
         return [[f, *r] for f, r in lanes.items()]  # flatten grouping dict into list of lists
 
     def region(self) -> str:
